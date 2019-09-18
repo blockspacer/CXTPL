@@ -1,0 +1,145 @@
+"-fmodules-ts"
++ https://www.modernescpp.com/index.php/c-20-modules
++ https://www.phoronix.com/scan.php?page=news_item&px=Clang-Cpp20-Modules-Switch
++ https://www.reddit.com/r/cpp/comments/640szr/trying_out_clang_5_modules_in_a_70k_loc_project/
++ https://gracicot.github.io/modules/2018/11/04/modules-are-not-precompiled-headers.html
+
+module.modulemap
++ https://github.com/mmha/gltfpp/blob/9e9e2fe5f8da374838a5b6b03d97963bed87956d/gltfpp/include/module.modulemap
++ https://github.com/mmha/gltfpp/search?q=fmodules&unscoped_q=fmodules
++ https://clang.llvm.org/docs/Modules.html#module-maps
++ https://indico.cern.ch/event/708041/contributions/3276196/attachments/1810525/3007180/ACAT_CModules.pdf'
++ https://stackoverflow.com/a/51345109/12073498
+
+-fmodules-codegen
++ http://llvm.org/devmtg/2017-10/slides/Blaikie-Modular%20Codegen.pdf
++ https://cmake.org/pipermail/cmake/2018-May/067486.html
++ https://build2.org/doc/modules-cppcon2017.pdf
+
+OUTCOME_TRYX, see https://fkosmale.bitbucket.io/posts/exhaustive-and-composable-error-handling-in-c%2B%2B/
++ https://ned14.github.io/outcome/videos/
++ https://github.com/mmha/gltfpp/blob/9e9e2fe5f8da374838a5b6b03d97963bed87956d/gltfpp/include/Error.h#L75
++ https://github.com/mmha/gltfpp/blob/9e9e2fe5f8da374838a5b6b03d97963bed87956d/test/Asset.cpp#L47
++ https://github.com/mmha/gltfpp/blob/9e9e2fe5f8da374838a5b6b03d97963bed87956d/test/common.h#L68
++ https://github.com/mmha/gltfpp/blob/9e9e2fe5f8da374838a5b6b03d97963bed87956d/test/Asset.cpp#L9
++ https://github.com/liliilli/DyExpression/wiki/BoostOutcome#toutcome
++ https://www.codevamping.com/2018/09/static-exceptions/
++ https://akrzemi1.wordpress.com/2019/04/25/handling-errors-is-canceling-operations/
++ https://fkosmale.bitbucket.io/posts/exhaustive-and-composable-error-handling-in-c%2B%2B/
++ https://ned14.github.io/outcome/tutorial/essential/before/
++ https://www.boost.org/doc/libs/1_70_0/libs/outcome/doc/html/motivation/plug_error_code.html
++ https://github.com/soramitsu/kagome/blob/a202a19589896465b6625097ae38e4ec0793babb/docs/result.md#L1
++ https://github.com/soramitsu/kagome/blob/a202a19589896465b6625097ae38e4ec0793babb/deps/outcome/outcome/outcome-register.hpp#L108
++ https://blog.tartanllama.xyz/optional-expected/
++ https://weliveindetail.github.io/blog/post/2017/10/22/llvm-expected.html#boost-outcome
++ https://llvm.org/docs/ProgrammersManual.html#error-handling
++ https://github.com/flexferrum/autoprogrammer/blob/db902121dd492a2df2b7287e0dafd7173062bcc7/src/generators/metaclasses/cpp_interpreter_impl.h#L16
++ https://ned14.github.io/outcome/motivation/plug_error_code/
++ https://blog.panicsoftware.com/error-handling-now-and-tomorrow/
++ https://foonathan.net/blog/2017/12/04/exceptions-vs-expected.html
++ http://craft-deploy.it/2019/01/03/thoughts-on-c-error-handling/
++ https://vittorioromeo.info/index/blog/adts_over_exceptions.html
++ https://www.reddit.com/r/cpp/comments/ae60nb/decades_have_passed_standard_c_has_no_agreed_and/
++ https://github.com/ned14/llfio/blob/c2813b23d76d0bb0bda733570ddda1533f506bf7/include/llfio/v2.0/storage_profile.hpp#L31
++ https://github.com/ned14/llfio/blob/2945980cf2d62ea0110cefe8f405029cb6a01b90/attic/example/workshop_naive_afio.ipp#L254
++ https://www.boost.org/doc/libs/1_70_0/libs/outcome/doc/html/experimental.html
++ https://www.boost.org/doc/libs/1_70_0/libs/outcome/doc/html/experimental/advantages.html
++ https://github.com/ned14/kerneltest/blob/0d484ee031fbfb26c4c4b9d838dc2263ab7b2ac2/include/kerneltest/v1.0/config.hpp#L164
++ https://github.com/soramitsu/kagome/blob/1bbd50147768b33c968fc3cdb9fef3dd2932ae23/core/blockchain/impl/common.cpp#L36
++ https://cdn2-ecros.pl/event/codedive/files/presentations/2018/code%20dive%202018%20-%20Andrzej%20Krzemienski%20-%20Dealing%20with%20function%20failures%20in%20C%2B%2B.pdf
++ https://www.boost.org/doc/libs/1_70_0/libs/outcome/doc/html/faq.html
++ https://zajo.github.io/leaf/
++ https://github.com/loopperfect/neither
++ https://bell0bytes.eu/expected/
++ https://buckaroo.pm/posts/error-handling-in-cpp/
++ https://www.fluentcpp.com/2017/07/04/multiple-error-handling-with-the-optional-monad-in-c/
++ https://github.com/EOSIO/eos-vm/blob/39a74ba50949cb554fd7d18496620b8f5068834c/tests/outcome_tests.cpp#L44
+
+Safe Numerics Library
++ https://embeddedartistry.com/blog/2019/6/28/enforce-correct-integer-arithmetic-using-the-c-safe-numerics-library
+
+// TODO: WASM & Node.js support
+// TODO: filtering
+// TODO: parse-time code exec
+// TODO: both runtime cling exec & native compile run support
+// TODO: error reporting with line numbers
+// TODO: unit tests
+// TODO: open/close tag customization
+// TODO: refactor
+// TODO: multithreaded transpiling of templates
+// TODO: docs, sanitize, iwyu, examples, CI/CD
+// TODO: support library, ranges-style
+// TODO: similar projects
+// + https://github.com/burner/sweet.hpp/tree/master/amber
+// TODO: example with includes workaround
+// TODO: example with external function call workaround
+// TODO: use string view https://www.bfilipek.com/2018/07/string-view-perf.html
+
+// see
+// https://bits.theorem.co/how-to-write-a-template-library/
+// https://lambda.xyz/blog/maud-is-fast/
+// https://dzone.com/articles/modern-type-safe-template-engines
+// http://www.wilxoft.com/
+// https://github.com/djc/askama
+// https://www.reddit.com/r/rust/comments/b06z9m/cuach_a_compiletime_html_template_system/
+
+
+
+## in-dev now
+JSON support
+Safer CPP support
+
+## ctp_scripts folder
+TODO
+
+## Run as commandline tool & compile_commands.json support / CMake integration
+TODO
+
+## Tutorials
+TODO
+
+## Generate docs website
+TODO
+https://www.mkdocs.org/user-guide/configuration/
+https://github.com/modm-io/modm/tree/e748b1c3688e753c1e49354ad1cef25f447f9ff6/docs
+
+## Integrate asan / e.t.c.
+TODO
+
+## Unit tests & CI/CD
+TODO
+
+like https://github.com/Manu343726/unittest#unittest
+
+## Benchmark (https://github.com/CathalT/Cerializer#parse--string---json-dom-object---c-struct-)
+TODO
+
+## Try it online (Jypiter/wandbox)
+
+## Provide header with common defines
+TODO
+
+## Docker / Vagrant
+TODO
+https://hub.docker.com/r/codible/clang_dev/
+
+## Better args parser & lines/spaces support ( make_interface(    outfile = filepath  ,   DISABLE   =   ${cling_var}) )
+TODO
+
+## Refactor
+TODO
+
+## exception stack traces (backward-cpp, ...)
+TODO
+
+## Log & error reporting
+TODO
+
+## Change detection (watcher like https://github.com/Manu343726/siplasplas/tree/master/examples/fswatch ) & hot reload
+TODO
+
+## Articles in media (medium, twitter, reddit, ...)
+TODO
+
+## Misc
+https://medium.com/fluence-network/porting-redis-to-webassembly-with-clang-wasi-af99b264ca8
