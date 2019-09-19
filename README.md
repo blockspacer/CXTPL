@@ -140,6 +140,12 @@ sudo apt-get install \
     libssl-dev \
     pkg-config
 
+# g3log
+bash scripts/install_g3log.sh
+
+# gtest
+bash scripts/install_gtest.sh
+
 # folly
 bash scripts/install_folly.sh
 ```
@@ -167,8 +173,40 @@ cmake -E chdir build cmake -E time cmake --build . -- -j6
 ```
 # run CXTPL_tool
 cmake -E time cmake -E chdir build/tool ./CXTPL_tool --help
-cmake -E time cmake -E chdir build/tool ./CXTPL_tool --threads 6 --in file1.cxtpl file2.cxtpl --out file1.cxtpl.cpp file2.cxtpl.cpp
 ```
+
+```
+# example input
+echo "file1.cxtpl" >> file1.cxtpl
+echo "file2.cxtpl" >> file2.cxtpl
+echo "file3.cxtpl" >> file3.cxtpl
+echo "file4.cxtpl" >> file4.cxtpl
+cmake -E time ./build/tool/CXTPL_tool --threads 6 --input_files file1.cxtpl file2.cxtpl --output_files file1.cxtpl.generated.cpp file2.cxtpl.generated.cpp
+```
+
+## How to use CXTPL_tool
+`--help` for list of available commandline options
+
+`--input_files` for input files.
+
+`--output_files` for output files. If not set, than output file names will generated based on input file names.
+
+Number of input files must be equal to the number of output files. File order is important.
+
+```
+./build/tool/CXTPL_tool --threads 6 --input_files file1.cxtpl file2.cxtpl file3.cxtpl file4.cxtpl --output_files file1.cxtpl.generated.cpp file2.cxtpl.generated.cpp file3.cxtpl.generated.cpp file4.cxtpl.generated.cpp -L ".=DBG9"
+```
+
+`-L .=DBG9` is log configuration in format https://github.com/facebook/folly/blob/master/folly/logging/docs/Config.md
+
+Example of log configuration which writes both into the file and console stream:
+```
+./build/tool/CXTPL_tool --threads 6 --input_files file1.cxtpl file2.cxtpl --output_files file1.cxtpl.cpp file2.cxtpl.cpp j -L ".:=INFO:default:console; default=file:path=y.log,async=true,sync_level=DBG9;console=stream:stream=stderr"
+```
+
+`--srcdir` to change current filesystem path for input files.
+
+`--resdir` to change current filesystem path for output files.
 
 ## Projects that use CXTPL
 + CXXCTP (https://github.com/blockspacer/CXXCTP) is a transpiler that extends C++ for new introspection, reflection and compile-time execution.

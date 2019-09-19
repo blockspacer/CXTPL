@@ -19,19 +19,25 @@ find_package( Boost
 add_library( boost_outcome INTERFACE )
 target_include_directories( boost_outcome SYSTEM INTERFACE "submodules/boost.outcome/include" )
 get_target_property (BOOST_OUTCOME_IMPORTED_LOCATION boost_outcome INTERFACE_INCLUDE_DIRECTORIES)
-message( "boost_outcome=${BOOST_OUTCOME_IMPORTED_LOCATION}" )
+message( STATUS "boost_outcome=${BOOST_OUTCOME_IMPORTED_LOCATION}" )
 
 add_library(microsoft_gsl INTERFACE)
 target_include_directories(microsoft_gsl SYSTEM INTERFACE "submodules/GSL/include")
 get_target_property (microsoft_gsl_IMPORTED_LOCATION microsoft_gsl INTERFACE_INCLUDE_DIRECTORIES)
-message( "microsoft_gsl=${microsoft_gsl_IMPORTED_LOCATION}" )
+message( STATUS "microsoft_gsl=${microsoft_gsl_IMPORTED_LOCATION}" )
 
 find_package( Threads REQUIRED )
 message(STATUS "CMAKE_THREAD_LIBS_INIT = ${CMAKE_THREAD_LIBS_INIT}")
 
-option(USE_FOLLY "Use facebook/folly library (Apache License 2.0)" ON)
 if(USE_FOLLY)
-  findPackageCrossPlatform( Folly REQUIRED )
+  find_package( Folly REQUIRED )
+  message( STATUS "FOLLY_LIBRARIES=${FOLLY_LIBRARIES}")
+  message( STATUS "FOLLY_INCLUDE_DIR=${FOLLY_INCLUDE_DIR}")
+
+  find_package(Libiberty REQUIRED) # used by folly
+  #get_target_property (Libiberty_LOCATION Libiberty INTERFACE_INCLUDE_DIRECTORIES)
+  message( STATUS "LIBIBERTY_INCLUDE_DIR=${LIBIBERTY_INCLUDE_DIR}")
+  message( STATUS "LIBIBERTY_LIBRARY=${LIBIBERTY_LIBRARY}")
 endif()
 
 find_package( X11 REQUIRED )
@@ -44,3 +50,31 @@ find_package( ZLIB REQUIRED )
 message(STATUS "ZLIB_LIBRARIES = ${ZLIB_LIBRARIES}")
 
 message(STATUS "CMAKE_DL_LIBS = ${CMAKE_DL_LIBS}")
+
+if(USE_RANG)
+  option(RANG_FIND_REQUIRED "RANG_FIND_REQUIRED" ON)
+  find_package(Rang REQUIRED)
+  message(STATUS "RANG found at ${RANG_INCLUDE_DIR}")
+else()
+  message(WARNING "RANG turned off!")
+endif()
+
+if(USE_G3LOG)
+  option(G3LOG_FIND_REQUIRED "G3LOG_FIND_REQUIRED" ON)
+  find_package(g3log REQUIRED)
+  message(STATUS "g3log logger found at ${G3LOG_LIBRARIES} AND ${G3LOG_INCLUDE_DIR}")
+else()
+  message(WARNING "g3log logger turned off!")
+endif()
+
+find_package(Gflags REQUIRED)
+message(STATUS "LIBGFLAGS_LIBRARY=${LIBGFLAGS_LIBRARY}")
+message(STATUS "LIBGFLAGS_INCLUDE_DIR=${LIBGFLAGS_INCLUDE_DIR}")
+
+find_package(LZ4 REQUIRED)
+
+find_package(LibEvent REQUIRED)
+message(STATUS "LZ4_LIBRARY=${LZ4_LIBRARY}")
+message(STATUS "LZ4_LIBRARY_DEBUG=${LZ4_LIBRARY_DEBUG}")
+message(STATUS "LZ4_LIBRARY_RELEASE=${LZ4_LIBRARY_RELEASE}")
+message(STATUS "LZ4_INCLUDE_DIR=${LZ4_INCLUDE_DIR}")

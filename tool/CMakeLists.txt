@@ -36,17 +36,52 @@ add_executable(CXTPL_tool
 
 set( USED_SYSTEM_LIBS
   Threads::Threads # pthread, https://cmake.org/cmake/help/v3.13/module/FindThreads.html
+  ${X11_LIBRARIES} # https://cmake.org/cmake/help/v3.13/module/FindX11.html
+  ${CMAKE_DL_LIBS} # https://cmake.org/cmake/help/v3.13/variable/CMAKE_DL_LIBS.html
+  EXPAT::EXPAT # https://cmake.org/cmake/help/v3.13/module/FindEXPAT.html
+  ZLIB::ZLIB # https://cmake.org/cmake/help/v3.13/module/FindZLIB.html
   # Custom libs
   stdc++fs # C++17 std::filesystem
   CACHE INTERNAL "USED_SYSTEM_LIBS" )
 
-target_link_libraries(CXTPL_tool
+# TODO: Catch FakeIt
+
+#message(STATUS G3LOG_LIBRARIES2=${G3LOG_LIBRARIES})
+
+target_link_libraries(CXTPL_tool PUBLIC
   # system libs
   ${USED_SYSTEM_LIBS}
   # boost libs
   ${USED_BOOST_LIBS}
+  boost_outcome
+  microsoft_gsl
+  double-conversion
   # CXTPL
   CXTPL_core
+  ${FOLLY_LIBRARIES}
+  # @note: Order matters https://stackoverflow.com/a/10269201/10904212
+  ${LIBIBERTY_LIBRARY} # used by folly
+  ${LIBEVENT_LIB} # used by folly
+  ${LZ4_LIBRARY} # used by folly
+  ${LIBGFLAGS_LIBRARY} # used by folly
+  ${G3LOG_LIBRARIES} # used by folly
+  glog
+  gflags
+)
+
+#get_target_property (glog_IMPORTED_LOCATION glog INTERFACE_INCLUDE_DIRECTORIES)
+#message( "glog_IMPORTED_LOCATION=${glog_IMPORTED_LOCATION}" )
+#
+#get_target_property (glog_IMPORTED_LIB glog INTERFACE_LINK_LIBRARIES)
+#message( "glog_IMPORTED_LIB=${glog_IMPORTED_LIB}" )
+
+target_include_directories(CXTPL_core PUBLIC
+  ${LIBIBERTY_INCLUDE_DIR} # used by folly
+  ${G3LOG_INCLUDE_DIR} # used by folly
+  ${LIBEVENT_INCLUDE_DIR} # used by folly
+  ${LZ4_INCLUDE_DIR} # used by folly
+  ${LIBGFLAGS_INCLUDE_DIR} # used by folly
+  ${FOLLY_INCLUDE_DIR}
 )
 
 #target_compile_options(CXTPL_tool PRIVATE

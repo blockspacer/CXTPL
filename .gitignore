@@ -62,6 +62,15 @@ install_manifest.txt
 compile_commands.json
 __pycache__/
 
+# coverage results
+coverage
+build/coverage
+
+# Build 3dparty
+build-iwyu/
+build-g3log/
+abseil/
+
 # Ignore Unix backup files
 *~
 

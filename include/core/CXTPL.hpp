@@ -23,8 +23,12 @@ namespace CXTPL {
 namespace core {
 
 #if defined CXTPL_FS
+#if __has_include(<filesystem>)
+namespace fs = std::filesystem;
+#else
 namespace fs = std::experimental::filesystem;
-#endif
+#endif // __has_include
+#endif // CXTPL_FS
 
 struct GeneratorTags {
   const char* openTagStart =

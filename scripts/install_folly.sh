@@ -19,7 +19,7 @@ cmake -E make_directory _build
 # cd _build
 pushd _build
 
-cmake ..
+cmake -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=OFF ..
 
 make -j $(nproc)
 
