@@ -4,9 +4,6 @@ Template engine with full C++ power (transpiles template to valid C++ code, supp
 
 Note: this project is provided as is, without any warranty (see License).
 
-## IN_DEV
-usage with cling
-
 ## What is `.cxtpl`
 `.cxtpl` is file extention for C++ template engine.
 
@@ -177,11 +174,11 @@ cmake -E time cmake -E chdir build/tool ./CXTPL_tool --help
 
 ```
 # example input
-echo "file1.cxtpl" >> file1.cxtpl
-echo "file2.cxtpl" >> file2.cxtpl
-echo "file3.cxtpl" >> file3.cxtpl
-echo "file4.cxtpl" >> file4.cxtpl
-cmake -E time ./build/tool/CXTPL_tool --threads 6 --input_files file1.cxtpl file2.cxtpl --output_files file1.cxtpl.generated.cpp file2.cxtpl.generated.cpp
+echo "file1.cxtpl" >> build/file1.cxtpl
+echo "file2.cxtpl" >> build/file2.cxtpl
+echo "file3.cxtpl" >> build/file3.cxtpl
+echo "file4.cxtpl" >> build/file4.cxtpl
+cmake -E time ./build/tool/CXTPL_tool --threads 6 --input_files build/file1.cxtpl build/file2.cxtpl --output_files build/file1.cxtpl.generated.cpp build/file2.cxtpl.generated.cpp
 ```
 
 ## How to use CXTPL_tool
@@ -194,19 +191,23 @@ cmake -E time ./build/tool/CXTPL_tool --threads 6 --input_files file1.cxtpl file
 Number of input files must be equal to the number of output files. File order is important.
 
 ```
-./build/tool/CXTPL_tool --threads 6 --input_files file1.cxtpl file2.cxtpl file3.cxtpl file4.cxtpl --output_files file1.cxtpl.generated.cpp file2.cxtpl.generated.cpp file3.cxtpl.generated.cpp file4.cxtpl.generated.cpp -L ".=DBG9"
+./build/tool/CXTPL_tool --threads 6 --input_files build/file1.cxtpl build/file2.cxtpl build/file3.cxtpl build/file4.cxtpl --output_files build/file1.cxtpl.generated.cpp build/file2.cxtpl.generated.cpp build/file3.cxtpl.generated.cpp build/file4.cxtpl.generated.cpp -L ".=DBG9"
 ```
 
 `-L .=DBG9` is log configuration in format https://github.com/facebook/folly/blob/master/folly/logging/docs/Config.md
 
 Example of log configuration which writes both into the file and console stream:
 ```
-./build/tool/CXTPL_tool --threads 6 --input_files file1.cxtpl file2.cxtpl --output_files file1.cxtpl.cpp file2.cxtpl.cpp j -L ".:=INFO:default:console; default=file:path=y.log,async=true,sync_level=DBG9;console=stream:stream=stderr"
+./build/tool/CXTPL_tool --threads 6 --input_files build/file1.cxtpl build/file2.cxtpl --output_files build/file1.cxtpl.generated.cpp build/file2.cxtpl.generated.cpp j -L ".:=INFO:default:console; default=file:path=y.log,async=true,sync_level=DBG9;console=stream:stream=stderr"
 ```
 
 `--srcdir` to change current filesystem path for input files.
 
 `--resdir` to change current filesystem path for output files.
+
+`--global_timeout_ms` to limit execution time for input files (performs check after task completion to stop other tasks from running).
+
+`--single_task_timeout_ms` to limit execution time for singe input file (performs check after task completion to stop other tasks from running).
 
 ## Projects that use CXTPL
 + CXXCTP (https://github.com/blockspacer/CXXCTP) is a transpiler that extends C++ for new introspection, reflection and compile-time execution.
@@ -223,3 +224,13 @@ Usefull links:
 RTTI enabled only in command line tool (CXTPL_tool), RTTI required by boost.po.
 
 CXTPL library disabled RTTI and uses BOOST_NO_RTTI/BOOST_NO_TYPEID (as private cmake config).
+
+## Similar projects
++ (compile-time) https://github.com/burner/sweet.hpp/tree/master/amber
++ (compile-time) https://github.com/evgeny-panasyuk/ctte
++ (compile-time) https://github.com/rep-movsd/see-phit
++ (run-time) https://github.com/pantor/inja
++ (run-time) https://github.com/jinja2cpp/Jinja2Cpp
++ (run-time) https://github.com/henryr/cpp-mustache
++ (Rust) Type-safe, compiled Jinja-like templates for Rust https://github.com/djc/askama
++ (article) https://dzone.com/articles/modern-type-safe-template-engines
