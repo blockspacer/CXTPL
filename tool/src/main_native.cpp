@@ -708,6 +708,23 @@ int main(int argc, char* argv[]) {
       return EXIT_FAILURE;
     }
 
+    auto fix_inputs = [](std::vector<std::string>& inout) {
+      std::vector<std::string> v;
+      for(const auto& it: inout) {
+        // split a string by blank spaces unless it is in quotes
+        std::istringstream iss(it);
+          std::string s;
+          while (iss >> std::quoted(s)) {
+              if(!s.empty()) {
+                v.push_back(s);
+              }
+          }
+      }
+      inout = v;
+    };
+
+    fix_inputs(in_args);
+
     if (out_args.empty()) {
       size_t i;
       for(const auto& it: in_args) {
@@ -715,6 +732,8 @@ int main(int argc, char* argv[]) {
         i++;
       }
     }
+
+    fix_inputs(out_args);
 
     XLOG(DBG9) << "inputs (" << in_args.size() << "): ";
     for(const auto& it: in_args) {
