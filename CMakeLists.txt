@@ -108,6 +108,8 @@ target_compile_definitions( CXTPL_core PUBLIC
 set_target_properties(CXTPL_core
   PROPERTIES ENABLE_EXPORTS 1)
 
+install(TARGETS CXTPL_core DESTINATION lib)
+
 add_subdirectory(tool)
 
-install(TARGETS CXTPL_core DESTINATION lib)
+add_subdirectory(examples)
