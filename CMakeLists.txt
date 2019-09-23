@@ -109,3 +109,5 @@ set_target_properties(CXTPL_core
   PROPERTIES ENABLE_EXPORTS 1)
 
 add_subdirectory(tool)
+
+install(TARGETS CXTPL_core DESTINATION lib)

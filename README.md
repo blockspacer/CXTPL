@@ -168,6 +168,12 @@ cmake -E chdir build cmake -E time cmake --build . -- -j6
 ```
 
 ```
+# install lib and CXTPL_tool
+cmake -E chdir build make install
+./CXTPL_tool --help
+```
+
+```
 # run CXTPL_tool
 cmake -E time cmake -E chdir build/tool ./CXTPL_tool --help
 ```
@@ -229,8 +235,9 @@ CXTPL library disabled RTTI and uses BOOST_NO_RTTI/BOOST_NO_TYPEID (as private c
 + (compile-time) https://github.com/burner/sweet.hpp/tree/master/amber
 + (compile-time) https://github.com/evgeny-panasyuk/ctte
 + (compile-time) https://github.com/rep-movsd/see-phit
++ (run-time) https://github.com/no1msd/mstch
++ (run-time) https://github.com/henryr/cpp-mustache
 + (run-time) https://github.com/pantor/inja
 + (run-time) https://github.com/jinja2cpp/Jinja2Cpp
-+ (run-time) https://github.com/henryr/cpp-mustache
 + (Rust) Type-safe, compiled Jinja-like templates for Rust https://github.com/djc/askama
 + (article) https://dzone.com/articles/modern-type-safe-template-engines

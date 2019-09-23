@@ -89,3 +89,5 @@ target_include_directories(CXTPL_core PUBLIC
 
 set_target_properties(CXTPL_tool
   PROPERTIES ENABLE_EXPORTS 1)
+
+install(TARGETS CXTPL_tool DESTINATION bin)
