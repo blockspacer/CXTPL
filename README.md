@@ -22,7 +22,7 @@ C++ template engine transpiles template into C++ code, so you will gain VERY goo
 
 C++ template engine may run in two modes:
 + compile-mode: compile cxtpl code into C++ file or std::string, then `#include` generated code & compile app as usual. Best performance.
-+ cling-mode (C++ JIT executed at runtime): compile cxtpl code into C++ file or std::string, then run generated code in Cling interpreter (no need to recompile app, usefull in dev-mode or for php-style apps).
++ cling-mode (C++ JIT executed at runtime): compile cxtpl code into C++ file or std::string, then run generated code in Cling interpreter (no need to recompile app, usefull in dev-mode or for php-style apps). See as example https://github.com/blockspacer/CXXCTP
 
 Again: Think about `.cxtpl` as lambda-function returning std::string. Prefer not to use `#include` from `.cxtpl`, just create `.cxtpl.h` file. Then `#include` both generated `.cxtpl.cpp` and created `.cxtpl.h` in your app code.
 
@@ -168,8 +168,13 @@ cmake -E chdir build cmake -E time cmake --build . -- -j6
 ```
 
 ```
+# (optional) check examples
+# cmake -E time cmake -E chdir build/examples/simple/ ./CXTPL_examples_simple
+```
+
+```
 # install lib and CXTPL_tool
-cmake -E chdir build make install
+sudo cmake -E chdir build make install
 CXTPL_tool --help
 ```
 
