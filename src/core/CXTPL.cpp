@@ -22,7 +22,7 @@ namespace core {
 
 namespace {
 
-static const std::string kOutVarName = "output";
+static const std::string kOutVarName = "cxtpl_output";
 
 static bool startsWith(const std::string& in, const std::string& prefix) {
   return !in.compare(0, prefix.size(), prefix);
