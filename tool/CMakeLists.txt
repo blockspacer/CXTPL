@@ -84,8 +84,8 @@ target_include_directories(CXTPL_core PUBLIC
   ${FOLLY_INCLUDE_DIR}
 )
 
-#target_compile_options(CXTPL_tool PRIVATE
-#  -fno-rtti)
+target_compile_options(CXTPL_tool PRIVATE
+  -frtti)
 
 set_target_properties(CXTPL_tool
   PROPERTIES ENABLE_EXPORTS 1)
