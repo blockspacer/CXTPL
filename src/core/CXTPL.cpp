@@ -181,8 +181,13 @@ static outcome::result<std::string, GeneratorErrorExtraInfo> generateFromString(
   {
     std::string::size_type pos = processStr.find(tags.openTagStart);
     if(pos != std::string::npos) {
-      resultStr += cpp_codegen::CodeGenerator::
-        appendToVariableAsRawText(processStr.substr( 0, pos ), kOutVarName);
+      const std::string subStrRawText = processStr.substr( 0, pos );
+      if(subStrRawText.empty()) {
+        resultStr += "\n"; // otherwise we may comment out next line
+      } else {
+        resultStr += cpp_codegen::CodeGenerator::
+          appendToVariableAsRawText(subStrRawText, kOutVarName);
+      }
       pos += std::string{tags.openTagStart}.size();
 
 #if defined(DEBUG_OUTPUT)
@@ -195,9 +200,14 @@ static outcome::result<std::string, GeneratorErrorExtraInfo> generateFromString(
       OUTCOME_TRY(result);
     } else {
       // remainder
-      resultStr += cpp_codegen::CodeGenerator::
-        appendToVariableAsRawText(processStr.substr( 0, processStr.size() ),
-          kOutVarName);
+      std::string subStrRawText = processStr.substr( 0, processStr.size());
+      if(subStrRawText.empty()) {
+        resultStr += "\n"; // separate code statements, comments, ...
+      } else {
+        resultStr += cpp_codegen::CodeGenerator::
+          appendToVariableAsRawText(subStrRawText,
+            kOutVarName);
+      }
       break;
     }
   }
