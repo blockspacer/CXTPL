@@ -114,15 +114,11 @@ static fs::path srcdir_abs_path;
 static fs::path resdir_abs_path;
 
 static boost::optional<std::chrono::milliseconds> single_task_timeout;
-//    = std::chrono::milliseconds(100);
 
   /// \note summary timeout for all files in one CPU_executor
 static boost::optional<std::chrono::milliseconds> global_timeout;
-//= /*
-//    (CPU_executor->getTaskQueueSize() + 1) **/
-//    std::chrono::seconds{3600};
 
-#if 0
+#if 0 // TODO: custom logger format
 namespace {
 class TestLogFormatter : public folly::LogFormatter {
  public:
@@ -215,37 +211,12 @@ class TestHandlerFactory : public folly::LogHandlerFactory {
 } // namespace
 #endif // 0
 
-/// \see https://github.com/facebook/folly/tree/master/folly/logging/docs
-/*FOLLY_INIT_LOGGING_CONFIG(
-//      ".:=INFO:default; default=stream:stream=stderr,async=false"
-//    ".:=INFO:default; default=stream:stream=stderr,async=false");
-//    ".=INFO:default; default=null");
-//    ".=INFO,folly=INFO; default:async=true,sync_level=INFO"
-//    ".=DBG9"
-      ".:=ERROR:default:x; default=stream:stream=stderr; x=stream:stream=stderr"
-);*/
-
 template<class T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
 {
     copy(v.begin(), v.end(), std::ostream_iterator<T>(os, " "));
     return os;
 }
-
-/*template<class T>
-std::ostream& operator<<(std::ostream& os, const unsigned int& v)
-{
-    copy(v.begin(), v.end(), std::ostream_iterator<T>(os, " "));
-    return os;
-}*/
-
-/*template<class T>
-std::ostream& operator<<(std::ostream& os, std::optional<std::string>& v)
-{
-    v.emplace("");
-    //copy(v.value().begin(), v.value().end(), std::ostream_iterator<T>(os, " "));
-    return os;
-}*/
 
 /*
  * An RAII object to be constructed at the beginning of main() and destructed
@@ -286,43 +257,30 @@ Init::Init(int argc, char* argv[],
   google::InstallFailureSignalHandler();
 #endif
 
-  // folly::Init() will automatically initialize the logging settings based on
-  // the FOLLY_INIT_LOGGING_CONFIG declaration above and the --logging command
-  // line flag.
-  //folly::Init init(&argc, &argv, /*removeFlags*/ true);
-
   // Move from the registration phase to the "you can actually instantiate
   // things now" phase.
   folly::SingletonVault::singleton()->registrationComplete();
 
   // similar to https://github.com/facebook/folly/blob/master/folly/init/Init.cpp#L49
   // but removed ParseCommandLineFlags
-  /*if(FLAGS_v) {
-    /// \note can`t use LOG here
-    std::cout << "LoggingConfig: " << folly::getBaseLoggingConfig() << std::endl;
-  }*/
-  std::cout << "log_config.value(): " << log_config.value() << std::endl;
-
   // add support fo file logging,
   // see https://github.com/facebook/folly/blob/master/folly/logging/docs/LogHandlers.md#file-handler-type
   folly::LoggerDB::get().registerHandlerFactory(
       std::make_unique<folly::FileHandlerFactory>());
 
   if(log_config.is_initialized()) {
+    //std::cout << "log_config.value(): " << log_config.value() << std::endl;
     CHECK(!log_config.value().empty())
       << "invalid (empty) log configuration";
     folly::initLoggingOrDie(log_config.value());
   } else {
+    /// \see https://github.com/facebook/folly/tree/master/folly/logging/docs
     folly::initLoggingOrDie(
-      ".:=ERROR:default:x; default=stream:stream=stderr; x=stream:stream=stderr");
-      //folly::getBaseLoggingConfig());
+      ".:=INFO:default:x; default=stream:stream=stderr; x=stream:stream=stderr");
   }
   auto programName = argc && argv && argc > 0 ? (argv)[0] : "unknown";
   XLOG(DBG4) << "programName " << programName << std::endl;
   google::InitGoogleLogging(programName);
-
-  //gflags::SetCommandLineOptionWithMode(
-  //    "minloglevel", "0", gflags::SET_FLAGS_DEFAULT);
 
 #if FOLLY_USE_SYMBOLIZER
   // Don't use glog's DumpStackTraceAndExit; rely on our signal handler.
@@ -338,7 +296,7 @@ Init::~Init() {
 }
 
 namespace {
-bool writeToFile(
+static bool writeToFile(
     folly::StringPiece contents,
     const std::string& path,
     int flags) {
@@ -346,15 +304,17 @@ bool writeToFile(
   if (fd == -1) {
     return false;
   }
+
   // TODO: file timeout https://github.com/connorlarkin1/react-native/blob/master/third-party/folly-2018.10.22.00/folly/logging/test/AsyncFileWriterTest.cpp#L583
   auto written = folly::writeFull(fd, contents.data(), contents.size());
   if (folly::closeNoInt(fd) != 0) {
     return false;
   }
+
   return written >= 0 && size_t(written) == contents.size();
 }
 
-std::string randomString(size_t minLen, size_t maxLen,
+static std::string randomString(size_t minLen, size_t maxLen,
     folly::StringPiece range = "abcdefghijklmnopqrstuvwxyz"
       "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") {
   assert(minLen <= maxLen);
@@ -369,15 +329,15 @@ std::string randomString(size_t minLen, size_t maxLen,
 
 } // anonymous
 
-bool writeStringToFile(folly::StringPiece contents, const std::string& path) {
+static bool writeStringToFile(folly::StringPiece contents, const std::string& path) {
   return writeToFile(contents, path, O_CREAT | O_WRONLY | O_TRUNC);
 }
 
-bool appendStringToFile(folly::StringPiece contents, const std::string& path) {
+static bool appendStringToFile(folly::StringPiece contents, const std::string& path) {
   return writeToFile(contents, path, O_CREAT | O_WRONLY | O_APPEND);
 }
 
-bool atomicallyWriteFileToDisk(
+static bool atomicallyWriteFileToDisk(
     folly::StringPiece contents,
     const std::string& absFilename) {
   fs::path tempFilePath;
@@ -432,7 +392,7 @@ bool atomicallyWriteFileToDisk(
   bool poison;
 };*/
 
-std::shared_ptr<folly::CPUThreadPoolExecutor>
+static std::shared_ptr<folly::CPUThreadPoolExecutor>
     make_pool_executor(unsigned long concurrency, int queue_size,
     bool throw_if_full, std::string_view pool_name) {
   std::unique_ptr<folly::BlockingQueue<folly::CPUThreadPoolExecutor::CPUTask>> task_queue;
@@ -455,7 +415,7 @@ std::shared_ptr<folly::CPUThreadPoolExecutor>
       std::make_shared<folly::NamedThreadFactory>(pool_name.data()));
 }
 
-void processTemplate(const std::string& in_path, const std::string out_path) {
+static void processTemplate(const std::string& in_path, const std::string out_path) {
   using namespace ::CXTPL::core::errors;
 
   folly::IOBufQueue buf;
@@ -547,14 +507,6 @@ void processTemplate(const std::string& in_path, const std::string out_path) {
   // see folly/io/async/AsyncPipe.cpp#L223
   try {
     const fs::path out_abs_path = fs::absolute(out_path, resdir_abs_path);
-    /*auto in_file = std::make_unique<folly::File>(out_path);
-    size_t bytesToWrite = genResult.value().size();
-    auto ret = folly::writeFull(in_file->fd(),
-      genResult.value().data(), bytesToWrite);
-    if (ret != -1 || errno != EAGAIN) {
-      folly::checkUnixError(ret, "write");
-      XLOG(DBG6) << "Wrote " << ret << " lines to file " << out_path;
-    }*/
     XLOG(DBG9) << "started writing into file " << out_abs_path;
     if(!atomicallyWriteFileToDisk(genResult.value(), out_abs_path)) {
       DCHECK(CPU_executor) << "invalid CPU_executor";
@@ -580,7 +532,7 @@ void processTemplate(const std::string& in_path, const std::string out_path) {
   }
 }
 
-void run_generation() {
+static void run_generation() {
   XLOG(DBG9) << "Current path is " << fs::current_path();
   XLOG(DBG9) << "srcdir: Local path is " << srcdir_arg.get_value_or("");
   XLOG(DBG9) << "srcdir: Absolute path is " << srcdir_abs_path;
@@ -658,57 +610,8 @@ void run_generation() {
 
         processTemplate(std::move(in_path), std::move(out_path));
 
-        std::this_thread::sleep_for(std::chrono::milliseconds{58});
-#if 0
-        folly::EventBase evb;
-        folly::STTimerFDTimeoutManager timeoutMgr(&evb);
-        std::unique_ptr<folly::AsyncTimeout> ts
-          = folly::AsyncTimeout::make(evb,[in_path, out_path]()
-        {
-          processTemplate(std::move(in_path), std::move(out_path));
-        });
-        //timeoutMgr.scheduleTimeout(ts.get(),
-        //    std::chrono::microseconds{1});
-        StackWheelTimerUs t(&timeoutMgr,
-          std::chrono::microseconds(single_task_timeout));
-        t.scheduleTimeout([](){
-        },
-            std::chrono::microseconds{1});
-        //evb.loop();
-
-        folly::TimedDrivableExecutor exec;
-        auto f1 = [&]() {
-          // TODO >>>>>>>>>
-          std::this_thread::sleep_for(std::chrono::milliseconds{300});
-        };
-        exec.add(f1);
-        exec.try_drive_until(
-          std::chrono::system_clock::now() + std::chrono::milliseconds(100));
-
-        folly::Baton<> barrier;
-
-        folly::EventBase evb;
-        evb.runInEventBaseThread([&evb, &barrier](){
-          XLOG(INFO) << "INFO1";
-          barrier.post();
-          //std::this_thread::sleep_for(std::chrono::milliseconds{300});
-          while(true){}
-          XLOG(INFO) << "INFO2";
-          XLOG(INFO) << "INFO3";
-        });
-        XLOG(INFO) << "loopOnce1";
-        //evb.loopOnce();
-        XLOG(INFO) << "loopOnce2";
-
-        if (!barrier.try_wait_for(single_task_timeout)) {
-            XLOG(ERR) << "Timeout while running task"
-              << " (" << in_path << " -> "  << out_path << ") ";
-            //CPU_executor->stop();
-            evb.terminateLoopSoon();
-        }
-        barrier.reset();
-        XLOG(INFO) << "loopOnce3";
-#endif
+        // TODO: timeouts
+        //std::this_thread::sleep_for(std::chrono::milliseconds{58});
 
       },
       folly::Executor::MID_PRI,
@@ -730,51 +633,7 @@ void run_generation() {
     DCHECK(!out_args.at(in_index).empty());
   }
 
-  //XLOG(INFO) << "CPU_executorCPU_executor";
-
   CPU_executor->join();
-  //CPU_executor->stop();
-
-#if 0
-    std::chrono::milliseconds timeout = /*
-      (CPU_executor->getTaskQueueSize() + 1) **/
-      std::chrono::milliseconds{99999};
-    CPU_executor->add(
-       ///\note copied data for lambda
-      [timeout, in_index] {
-        //processTemplate(std::move(in_path), std::move(out_path));
-        XLOG(DBG4) << "asddddddddddd : ";
-        std::this_thread::sleep_for(std::chrono::milliseconds{100});
-      },
-      folly::Executor::MID_PRI,
-      timeout, // copyed
-        ///\note copied data for lambda
-        [timeout](){
-          XLOG(ERR) << "Task for file generation "
-            << " (" << " -> " << ") "
-            << "timed out in : " << timeout.count() << " milliseconds";
-          //std::terminate();
-        }
-      );
-    CPU_executor->add(
-       ///\note copied data for lambda
-      [timeout, in_index] {
-        //processTemplate(std::move(in_path), std::move(out_path));
-        XLOG(DBG4) << "asddddddddddd : ";
-        std::this_thread::sleep_for(std::chrono::milliseconds{100});
-      },
-      folly::Executor::MID_PRI,
-      timeout, // copyed
-        ///\note copied data for lambda
-        [timeout](){
-          XLOG(ERR) << "Task for file generation "
-            << " (" << " -> " << ") "
-            << "timed out in : " << timeout.count() << " milliseconds";
-          //std::terminate();
-        }
-      );
-      CPU_executor->join();
-#endif
 
   /// \note don`t use same executor again
   CPU_executor.reset();
@@ -810,6 +669,8 @@ int main(int argc, char* argv[]) {
       (resdir_arg_name, po::value(&resdir_arg)->default_value(boost::none, ""), "change current working directory path")
       (srcdir_arg_name, po::value(&srcdir_arg)->default_value(boost::none, ""), "change current working directory path")
       (in_arg_name, po::value(&in_args)->multitoken(), "template files")
+      // TODO: outfile_pattern_name
+      //(outfile_pattern_name, po::value(&outfile_pattern)->default_value("{out.dir}{in.filename}{in.ext}.cpp"), "output format")
       (out_arg_name, po::value(&out_args)->multitoken(), "where to place C++ code files generated from template");
 
     po::variables_map vm;
@@ -830,25 +691,7 @@ int main(int argc, char* argv[]) {
         std::chrono::milliseconds{global_timeout_arg};
     }
 
-    //FLAGS_alsologtostderr = true;
-    //FLAGS_minloglevel = minloglevel;
-    //FLAGS_v = log_verbosity;
     Init(argc, argv, log_config);
-
-    /*auto& db = folly::LoggerDB::get();
-    folly::LogCategory* category = db.getCategoryOrNull("");
-    CHECK(category) << "unknown category";
-    if(category) {
-      folly::Logger(category).getCategory()
-        ->setLevel(folly::LogLevel::DBG9);
-        //folly::stringToLogLevel("ERROR"), true);
-    }*/
-
-    /*if (!srcdir_arg.is_initialized()) {
-      XLOG(ERR) << "ERROR: no srcdir_arg.";
-      return EXIT_SUCCESS;
-    }*/
-    //XLOG(DBG9) << "desc";
 
     if (vm.count(help_arg_name)) {
       XLOG(INFO) << desc;
@@ -906,46 +749,6 @@ int main(int argc, char* argv[]) {
     XLOG(ERR) << "ERROR: Exception of unknown type!";
     return EXIT_FAILURE;
   }
-
-  XLOG(DBG4) << "main...";
-
-  //CXTPL::core::Generator template_engine;
-
-  //XLOG(DBG4) << "CXTPL::core::Generator...";
-
-  /*template_engine.tags().code_append_raw.open_tag = CXTPL::core::SingleTag{
-    CXTPL_TAG_OPENING "sadasd", "", CXTPL_TAG_CLOSING,
-  };*/
-
-#if 0
-  const char* input
-#ifdef NDEBUG
-    = "";
-#else
-    = R"raw(
-
-  start!
-
-<CX=> // parameters begin
-
-const std::string generator_path = "somepath";
-
-std::vector<std::string> generator_includes{"someinclude"};
-
-// parameters end
-/* no newline, see CX=l */ <=CX><CX=l>
-// This is generated file. Do not modify directly.
-// Path to the code generator: <CX=r> generator_path <=CX>.
-
-<CX=l> for(const auto& fileName: generator_includes) {
-<CX=r> fileName /* CX=r used to append to cxtpl_output */ <=CX>
-<CX=l> } // end for
-
-  end!
-
-)raw";
-#endif
-#endif // 0
 
   srcdir_abs_path = fs::absolute(fs::current_path());
   if(srcdir_arg.is_initialized() && !srcdir_arg.value().empty()) {

@@ -170,7 +170,7 @@ cmake -E chdir build cmake -E time cmake --build . -- -j6
 ```
 # install lib and CXTPL_tool
 cmake -E chdir build make install
-./CXTPL_tool --help
+CXTPL_tool --help
 ```
 
 ```
