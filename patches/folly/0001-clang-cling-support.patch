@@ -1,0 +1,40 @@
+From 22e1e6e45f04a18960d7209143008df8191ce09a Mon Sep 17 00:00:00 2001
+From: trofimov_d_a <trofimov_d_a@magnit.ru>
+Date: Tue, 24 Sep 2019 16:14:35 +0300
+Subject: [PATCH 1/1] clang/cling support
+
+---
+ CMake/FollyConfigChecks.cmake | 2 +-
+ CMake/folly-config.h.cmake    | 3 ++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/CMake/FollyConfigChecks.cmake b/CMake/FollyConfigChecks.cmake
+index dd671076..c79f30f9 100644
+--- a/CMake/FollyConfigChecks.cmake
++++ b/CMake/FollyConfigChecks.cmake
+@@ -6,7 +6,7 @@ include(CheckSymbolExists)
+ include(CheckTypeSize)
+ include(CheckCXXCompilerFlag)
+ 
+-CHECK_INCLUDE_FILE_CXX(jemalloc/jemalloc.h FOLLY_USE_JEMALLOC)
++#CHECK_INCLUDE_FILE_CXX(jemalloc/jemalloc.h FOLLY_USE_JEMALLOC)
+ 
+ if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
+   # clang only rejects unknown warning flags if -Werror=unknown-warning-option
+diff --git a/CMake/folly-config.h.cmake b/CMake/folly-config.h.cmake
+index cb8a2518..c334c00a 100644
+--- a/CMake/folly-config.h.cmake
++++ b/CMake/folly-config.h.cmake
+@@ -35,7 +35,8 @@
+ 
+ #cmakedefine FOLLY_HAVE_LIBGLOG 1
+ 
+-#cmakedefine FOLLY_USE_JEMALLOC 1
++#define FOLLY_ASSUME_NO_JEMALLOC 1
++
+ #cmakedefine FOLLY_USE_LIBSTDCPP 1
+ 
+ #if __has_include(<features.h>)
+-- 
+2.17.1
+

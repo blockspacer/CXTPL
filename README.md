@@ -93,10 +93,10 @@ Usefull links:
 
 ### Clone code
 ```
-sudo git submodule sync --recursive
-sudo git submodule update --init --recursive --depth 50
+git submodule sync --recursive
+git submodule update --init --recursive --depth 50
 # or
-sudo git submodule update --force --recursive --init --remote
+git submodule update --force --recursive --init --remote
 ```
 
 ## DEPENDENCIES
@@ -136,6 +136,7 @@ bash scripts/install_g3log.sh
 bash scripts/install_gtest.sh
 
 # folly
+# NOTE: we patched folly for clang support https://github.com/facebook/folly/issues/976
 bash scripts/install_folly.sh
 ```
 

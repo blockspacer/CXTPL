@@ -14,6 +14,9 @@ pushd submodules/folly
 
 git submodule update --init --recursive
 
+# fix for https://github.com/facebook/folly/issues/976
+cat ../../patches/folly/0001-clang-cling-support.patch | git am
+
 cmake -E make_directory _build
 
 # cd _build
