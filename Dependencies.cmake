@@ -14,7 +14,7 @@ set( BOOST_LIBS CACHE STRING ${BOOST_ROOT}/lib )
 
 find_package( Boost
   COMPONENTS program_options filesystem regex date_time system thread graph log
-  EXACT REQUIRED )
+  REQUIRED )
 
 add_library( boost_outcome INTERFACE )
 target_include_directories( boost_outcome SYSTEM INTERFACE "submodules/boost.outcome/include" )

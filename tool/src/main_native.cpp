@@ -74,6 +74,11 @@
 #include <folly/experimental/TimerFDTimeoutManager.h>
 #include <folly/io/async/test/UndelayedDestruction.h>
 #include <folly/executors/TimedDrivableExecutor.h>
+#include <folly/Conv.h>
+#include <folly/portability/GFlags.h>
+#include <folly/ssl/Init.h>
+
+#include <glog/logging.h>
 
 #if FOLLY_USE_SYMBOLIZER
 #include <folly/experimental/symbolizer/SignalHandler.h> // @manual
@@ -241,11 +246,6 @@ class Init {
   Init& operator=(Init const&) = delete;
   Init& operator=(Init&&) = delete;
 };
-
-#include <folly/Conv.h>
-#include <folly/portability/GFlags.h>
-#include <folly/ssl/Init.h>
-#include <glog/logging.h>
 
 Init::Init(int argc, char* argv[],
     boost::optional<std::string> log_config, bool removeFlags) {
@@ -673,7 +673,9 @@ int main(int argc, char* argv[]) {
         std::chrono::milliseconds{global_timeout_arg};
     }
 
+    /// \note no logging before Init!
     Init(argc, argv, log_config);
+    XLOG(DBG9) << "Initialized CXTPL_tool";
 
     if (vm.count(help_arg_name)) {
       XLOG(INFO) << desc;

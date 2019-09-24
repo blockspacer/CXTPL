@@ -1,6 +1,6 @@
 #pragma once
 
-#include "interations/outcome/error_utils.hpp"
+#include "integrations/outcome/error_utils.hpp"
 
 #include <string>
 #include <system_error>

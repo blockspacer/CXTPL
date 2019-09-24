@@ -61,8 +61,8 @@ add_library(CXTPL_core
   ${CMAKE_CURRENT_SOURCE_DIR}/include/core/tags.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/core/errors/errors.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/codegen/cpp/cpp_codegen.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/interations/outcome/error_utils.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/interations/outcome/error_macros.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/integrations/outcome/error_utils.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/integrations/outcome/error_macros.hpp
 )
 
 #message(STATUS G3LOG_LIBRARIES1=${G3LOG_LIBRARIES})
@@ -84,8 +84,12 @@ target_link_libraries(CXTPL_core PUBLIC
   #gflags
 )
 
-target_include_directories(CXTPL_core PUBLIC
+target_include_directories(CXTPL_core PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+target_include_directories(CXTPL_core PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
