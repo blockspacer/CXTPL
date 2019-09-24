@@ -269,7 +269,6 @@ Init::Init(int argc, char* argv[],
       std::make_unique<folly::FileHandlerFactory>());
 
   if(log_config.is_initialized()) {
-    //std::cout << "log_config.value(): " << log_config.value() << std::endl;
     CHECK(!log_config.value().empty())
       << "invalid (empty) log configuration";
     folly::initLoggingOrDie(log_config.value());
@@ -279,7 +278,7 @@ Init::Init(int argc, char* argv[],
       ".:=INFO:default:x; default=stream:stream=stderr; x=stream:stream=stderr");
   }
   auto programName = argc && argv && argc > 0 ? (argv)[0] : "unknown";
-  XLOG(DBG4) << "programName " << programName << std::endl;
+  XLOG(DBG9) << "program name is " << programName;
   google::InitGoogleLogging(programName);
 
 #if FOLLY_USE_SYMBOLIZER
@@ -427,32 +426,29 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
       auto data = buf.preallocate(4000, 4000);
       auto rc = folly::readNoInt(in_file->fd(), data.first, data.second);
       if (rc < 0) {
-        XLOG(DBG4) << "Read error=" << rc;
+        XLOG(ERR) << "Read error=" << rc;
         in_file.reset();
         break;
       } else if (rc == 0) {
         // done
         in_file.reset();
-        XLOG(DBG4) << "Read EOF";
+        XLOG(DBG9) << "Read EOF for " << in_abs_path;
         break;
       } else {
         buf.postallocate(rc);
       }
     }
   } catch (const std::system_error& ex) {
+    XLOG(ERR) << "ERROR: Could not open file " << in_path
+      << " exception = " << folly::exceptionStr(ex);
     DCHECK(CPU_executor) << "invalid CPU_executor";
-    CPU_executor->addWithPriority(
-      [p = std::move(in_path), e = std::move(ex)](){
-        XLOG(ERR) << "ERROR: Could not open file " << p
-          << " exception = " << folly::exceptionStr(e);
-        //std::terminate(); // TODO: gracefull_shutdown
-        //CPU_executor->stop();
-    }, folly::Executor::HI_PRI);
+    //std::terminate(); // TODO: gracefull_shutdown
+    //CPU_executor->stop();
     return;
   }
 
   if(buf.empty() || buf.front()->empty()) {
-    XLOG(DBG4) << "WARNING: empty input from file " << in_path;
+    XLOG(WARNING) << "WARNING: empty input from file " << in_path;
     //continue;
     return;
   }
@@ -464,6 +460,7 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
   };
 
   const std::string input = queueToString(buf);
+  XLOG(DBG9) << "input file contents" << input;
 
   CXTPL::core::Generator template_engine;
 
@@ -476,30 +473,29 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
       XLOG(WARNING) << "WARNING: empty string as Generator input";
       return;
     } else {
+      XLOG(ERR) << "=== ERROR START ===";
+      XLOG(ERR) << "ERROR message: " <<
+        make_error_code(genResult.error().ec).message();
+      XLOG(ERR) << "ERROR category: " <<
+        " " << make_error_code(genResult.error().ec).category().name();
+      XLOG(ERR) << "ERROR info: " <<
+        " " << genResult.error().extra_info;
+      XLOG(ERR) << "input data: " << input;
+      // TODO: file path here
+      XLOG(ERR) << "=== ERROR END ===";
+      //std::terminate(); // TODO: gracefull_shutdown
+      //CPU_executor->stop();
       DCHECK(CPU_executor) << "invalid CPU_executor";
-      CPU_executor->addWithPriority(
-        [r = std::move(genResult), i = std::move(input)](){
-          XLOG(ERR) << "=== ERROR START ===";
-          XLOG(ERR) << "ERROR message: " <<
-            make_error_code(r.error().ec).message();
-          XLOG(ERR) << "ERROR category: " <<
-            " " << make_error_code(r.error().ec).category().name();
-          XLOG(ERR) << "ERROR info: " <<
-            " " << r.error().extra_info;
-          XLOG(ERR) << "input data: " << i;
-          // TODO: file path here
-          XLOG(ERR) << "=== ERROR END ===";
-          //std::terminate(); // TODO: gracefull_shutdown
-          //CPU_executor->stop();
-      }, folly::Executor::HI_PRI);
       return;
     }
   }
 
   if(!genResult.has_value() || genResult.value().empty()) {
-    XLOG(DBG4) << "WARNING: empty output from file " << in_path;
+    XLOG(WARNING) << "WARNING: empty output from file " << in_path;
     return;
   }
+
+  XLOG(DBG9) << "output file contents" << genResult.value();
 
   XLOG(DBG9) << "input path for generator: " << in_path;
   XLOG(DBG9) << "generated output data: " << genResult.value();
@@ -509,25 +505,19 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
     const fs::path out_abs_path = fs::absolute(out_path, resdir_abs_path);
     XLOG(DBG9) << "started writing into file " << out_abs_path;
     if(!atomicallyWriteFileToDisk(genResult.value(), out_abs_path)) {
+      XLOG(ERR) << "ERROR: can`t write to file " << out_abs_path;
+      //std::terminate(); // TODO: gracefull_shutdown
+      //CPU_executor->stop();
       DCHECK(CPU_executor) << "invalid CPU_executor";
-      CPU_executor->addWithPriority(
-        [p = std::move(out_abs_path)](){
-          XLOG(ERR) << "ERROR: can`t write to file " << p;
-          //std::terminate(); // TODO: gracefull_shutdown
-          //CPU_executor->stop();
-      }, folly::Executor::HI_PRI);
       return;
     }
     XLOG(DBG6) << "Wrote " << genResult.value().size() << " bytes to file " << out_abs_path;
   } catch (const std::system_error& ex) {
+    XLOG(ERR) << "ERROR: Could not open file " << in_path
+      << " exception = " << folly::exceptionStr(ex);
+    //std::terminate(); // TODO: gracefull_shutdown
+    //CPU_executor->stop();
     DCHECK(CPU_executor) << "invalid CPU_executor";
-    CPU_executor->addWithPriority(
-      [p = std::move(in_path), e = std::move(ex)](){
-        XLOG(ERR) << "ERROR: Could not open file " << p
-          << " exception = " << folly::exceptionStr(e);
-        //std::terminate(); // TODO: gracefull_shutdown
-        //CPU_executor->stop();
-    }, folly::Executor::HI_PRI);
     return;
   }
 }
@@ -548,14 +538,14 @@ static void run_generation() {
 
   CPU_executor->subscribeToTaskStats(
     [&](folly::ThreadPoolExecutor::TaskStats stats) {
-        XLOG(DBG4) << "Done task";
-        XLOG(DBG4) << "task.stats.expired = " << stats.expired;
+        XLOG(DBG9) << "Done task";
+        XLOG(DBG9) << "task.stats.expired = " << stats.expired;
         {
           long int diff_ms
             = std::chrono::duration_cast<std::chrono::milliseconds>(
                          stats.runTime)
                          .count();
-          XLOG(DBG4) << "task.stats.runTime = " << diff_ms
+          XLOG(DBG9) << "task.stats.runTime = " << diff_ms
             << " (milliseconds) or " << stats.runTime.count() << " (nanoseconds)";
           if(single_task_timeout.is_initialized() && stats.runTime > single_task_timeout.value()) {
             XLOG(WARNING) << "task.stats.runTime timed out "
@@ -568,7 +558,7 @@ static void run_generation() {
             = std::chrono::duration_cast<std::chrono::milliseconds>(
                          stats.waitTime)
                          .count();
-          XLOG(DBG4) << "task.stats.waitTime = " << diff_ms
+          XLOG(DBG9) << "task.stats.waitTime = " << diff_ms
             << " (milliseconds) or " << stats.waitTime.count() << " (nanoseconds)";
         }
     }
@@ -590,15 +580,11 @@ static void run_generation() {
       //\note std::chrono::milliseconds::max() not supported here
       : std::chrono::milliseconds{1000*60*60*24*7};
 
-    //XLOG(DBG4) << "tout2 = " << tout.count();
-
     if(global_timeout.is_initialized() && global_timeout.value() < tout) {
       tout = global_timeout.value();
     }
 
     //tout = std::chrono::milliseconds{500};
-
-    //XLOG(DBG4) << "tout1 = " << tout.count();
 
     typedef folly::UndelayedDestruction<folly::HHWheelTimerHighRes> StackWheelTimerUs;
 
@@ -662,31 +648,27 @@ int main(int argc, char* argv[]) {
       (help_arg_name, "produce help message")
       (threads_arg_name, po::value(&threads_arg)->default_value(2), "number of threads")
       (log_arg_name, po::value(&log_config)->default_value(boost::none, ""), "log configuration")
-      (global_timeout_arg_name, po::value<int>(&global_timeout_arg)->default_value(0), "log configuration")
-      (single_task_timeout_arg_name, po::value<int>(&single_task_timeout_arg)->default_value(0), "log configuration")
+      (global_timeout_arg_name, po::value<int>(&global_timeout_arg)->default_value(0), "global timeout")
+      (single_task_timeout_arg_name, po::value<int>(&single_task_timeout_arg)->default_value(0), "single task timeout")
       //(log_verbosity_name, po::value(&log_verbosity)->default_value(9), "log verbosity")
-      //(minloglevel_name, po::value(&minloglevel)->default_value(0), "log verbosity")
-      (resdir_arg_name, po::value(&resdir_arg)->default_value(boost::none, ""), "change current working directory path")
-      (srcdir_arg_name, po::value(&srcdir_arg)->default_value(boost::none, ""), "change current working directory path")
-      (in_arg_name, po::value(&in_args)->multitoken(), "template files")
+      //(minloglevel_name, po::value(&minloglevel)->default_value(0), "minloglevel")
+      (resdir_arg_name, po::value(&resdir_arg)->default_value(boost::none, ""), "change output directory path (where to place generated files)")
+      (srcdir_arg_name, po::value(&srcdir_arg)->default_value(boost::none, ""), "change current working directory path (path to template files)")
+      (in_arg_name, po::value(&in_args)->multitoken(), "list of template files that must be used for C++ code generation")
       // TODO: outfile_pattern_name
       //(outfile_pattern_name, po::value(&outfile_pattern)->default_value("{out.dir}{in.filename}{in.ext}.cpp"), "output format")
-      (out_arg_name, po::value(&out_args)->multitoken(), "where to place C++ code files generated from template");
+      (out_arg_name, po::value(&out_args)->multitoken(), "list of C++ files that must be generated from templates");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
 
     if(single_task_timeout_arg != 0) {
-      std::cout << "single_task_timeout_arg "
-        << single_task_timeout_arg <<std::endl;
       single_task_timeout =
         std::chrono::milliseconds{single_task_timeout_arg};
     }
 
     if(global_timeout_arg != 0) {
-      std::cout << "global_timeout_arg "
-        << global_timeout_arg <<std::endl;
       global_timeout =
         std::chrono::milliseconds{global_timeout_arg};
     }
@@ -711,12 +693,14 @@ int main(int argc, char* argv[]) {
     auto fix_inputs = [](std::vector<std::string>& inout) {
       std::vector<std::string> v;
       for(const auto& it: inout) {
+        XLOG(DBG9) << "before: " << it;
         // split a string by blank spaces unless it is in quotes
         std::istringstream iss(it);
           std::string s;
           while (iss >> std::quoted(s)) {
               if(!s.empty()) {
                 v.push_back(s);
+                XLOG(DBG9) << "after: " << s;
               }
           }
       }
@@ -799,6 +783,6 @@ int main(int argc, char* argv[]) {
   long int diff_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
                  std::chrono::steady_clock::now() - chrono_then)
                  .count();
-  XLOG(DBG4) << "Done in : " << diff_ms << " milliseconds (" << diff_ns << " nanoseconds)";
+  XLOG(DBG9) << "Done in : " << diff_ms << " milliseconds (" << diff_ns << " nanoseconds)";
   return EXIT_SUCCESS;
 }

@@ -6,8 +6,6 @@ project(CXTPL_examples_simple)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
-
 set( BOOST_ROOT CACHE STRING /usr )
 set( Boost_ADDITIONAL_VERSIONS "1.62 1.63 1.64 1.65 1.66 1.67 1.68 1.69" )
 set( BOOST_LIBS CACHE STRING ${BOOST_ROOT}/lib )
@@ -44,10 +42,6 @@ set( USED_SYSTEM_LIBS
   stdc++fs # C++17 std::filesystem
   CACHE INTERNAL "USED_SYSTEM_LIBS" )
 
-# TODO: Catch FakeIt
-
-#message(STATUS G3LOG_LIBRARIES2=${G3LOG_LIBRARIES})
-
 target_link_libraries(CXTPL_examples_simple PUBLIC
   # system libs
   ${USED_SYSTEM_LIBS}
@@ -60,12 +54,6 @@ target_link_libraries(CXTPL_examples_simple PUBLIC
   CXTPL_core
   ${LIBIBERTY_LIBRARY}
 )
-
-#get_target_property (glog_IMPORTED_LOCATION glog INTERFACE_INCLUDE_DIRECTORIES)
-#message( "glog_IMPORTED_LOCATION=${glog_IMPORTED_LOCATION}" )
-#
-#get_target_property (glog_IMPORTED_LIB glog INTERFACE_LINK_LIBRARIES)
-#message( "glog_IMPORTED_LIB=${glog_IMPORTED_LIB}" )
 
 target_include_directories(CXTPL_core PUBLIC
   ${LIBIBERTY_INCLUDE_DIR}

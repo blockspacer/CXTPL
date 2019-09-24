@@ -1,12 +1,13 @@
 ﻿cmake_minimum_required( VERSION 3.10.0 FATAL_ERROR )
 
 # Building as separate project.
-project(CXTPL_tool)
+project(CXTPL_examples_cmake_integration)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
+set(CXTPL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+list(APPEND CMAKE_MODULE_PATH ${CXTPL_DIR}/cmake/exports)
 
 set( BOOST_ROOT CACHE STRING /usr )
 set( Boost_ADDITIONAL_VERSIONS "1.62 1.63 1.64 1.65 1.66 1.67 1.68 1.69" )
@@ -30,7 +31,7 @@ message(STATUS "ZLIB_LIBRARIES = ${ZLIB_LIBRARIES}")
 message(STATUS "CMAKE_DL_LIBS = ${CMAKE_DL_LIBS}")
 
 # The project has one binary:
-add_executable(CXTPL_tool
+add_executable(CXTPL_examples_cmake_integration
   ${CMAKE_CURRENT_SOURCE_DIR}/src/main_native.cpp
 )
 
@@ -44,7 +45,7 @@ set( USED_SYSTEM_LIBS
   stdc++fs # C++17 std::filesystem
   CACHE INTERNAL "USED_SYSTEM_LIBS" )
 
-target_link_libraries(CXTPL_tool PUBLIC
+target_link_libraries(CXTPL_examples_cmake_integration PUBLIC
   # system libs
   ${USED_SYSTEM_LIBS}
   # boost libs
@@ -54,30 +55,32 @@ target_link_libraries(CXTPL_tool PUBLIC
   double-conversion
   # CXTPL
   CXTPL_core
-  ${FOLLY_LIBRARIES}
-  # @note: Order matters https://stackoverflow.com/a/10269201/10904212
-  ${LIBIBERTY_LIBRARY} # used by folly
-  ${LIBEVENT_LIB} # used by folly
-  ${LZ4_LIBRARY} # used by folly
-  ${LIBGFLAGS_LIBRARY} # used by folly
-  ${G3LOG_LIBRARIES} # used by folly
-  glog
-  gflags
+  ${LIBIBERTY_LIBRARY}
 )
 
-target_include_directories(CXTPL_tool PUBLIC
-  ${LIBIBERTY_INCLUDE_DIR} # used by folly
-  ${G3LOG_INCLUDE_DIR} # used by folly
-  ${LIBEVENT_INCLUDE_DIR} # used by folly
-  ${LZ4_INCLUDE_DIR} # used by folly
-  ${LIBGFLAGS_INCLUDE_DIR} # used by folly
-  ${FOLLY_INCLUDE_DIR}
+set(cxtpl_in_dir "${CMAKE_CURRENT_SOURCE_DIR}/resources/cxtpl")
+set(cxtpl_out_dir "${CMAKE_CURRENT_SOURCE_DIR}/resources/cxtpl/generated")
+
+target_include_directories(CXTPL_examples_cmake_integration PUBLIC
+  ${LIBIBERTY_INCLUDE_DIR}
+
+  # path to `generated` folder
+  "${cxtpl_out_dir}/.."
 )
 
-target_compile_options(CXTPL_tool PRIVATE
+target_compile_options(CXTPL_examples_cmake_integration PRIVATE
   -frtti)
 
-set_target_properties(CXTPL_tool
+set_target_properties(CXTPL_examples_cmake_integration
   PROPERTIES ENABLE_EXPORTS 1)
 
-install(TARGETS CXTPL_tool DESTINATION bin)
+find_package(CXTPL_tool REQUIRED)
+
+list(APPEND cxtpl_inputs "${cxtpl_in_dir}/example_includes.cxtpl")
+
+# generated files
+list(APPEND cxtpl_outputs "${cxtpl_out_dir}/example_includes.cxtpl.cpp")
+
+# create new codegen files for TARGET_NAME_HERE based on cxtpl_inputs and cxtpl_outputs
+target_add_CXTPL_tool(CXTPL_examples_cmake_integration "${cxtpl_inputs}" "${cxtpl_outputs}")
+
