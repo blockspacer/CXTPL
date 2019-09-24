@@ -82,5 +82,5 @@ list(APPEND cxtpl_inputs "${cxtpl_in_dir}/example_includes.cxtpl")
 list(APPEND cxtpl_outputs "${cxtpl_out_dir}/example_includes.cxtpl.cpp")
 
 # create new codegen files for TARGET_NAME_HERE based on cxtpl_inputs and cxtpl_outputs
-target_add_CXTPL_tool(CXTPL_examples_cmake_integration "${cxtpl_inputs}" "${cxtpl_outputs}")
+target_add_CXTPL_tool(CXTPL_examples_cmake_integration "cmake_integration" "${cxtpl_inputs}" "${cxtpl_outputs}")
 

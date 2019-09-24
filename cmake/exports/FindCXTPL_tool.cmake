@@ -29,13 +29,13 @@ if(CXTPL_tool)
         # makes this redundant, as it enables it for all targets already. This
         # could be used in combination with custom target commands or by
         # overriding the add_* commands with custom implementation.
-        function(target_add_CXTPL_tool TARGET INPUTS OUTPUTS)
+        function(target_add_CXTPL_tool TARGET GUID INPUTS OUTPUTS)
           set_source_files_properties(
             ${OUTPUTS}
             PROPERTIES GENERATED TRUE
           )
 
-          add_custom_target(CXTPL_tool_target_for_${TARGET} ALL
+          add_custom_target(CXTPL_tool_target_for_${TARGET}_${GUID} ALL
             COMMAND ${CMAKE_COMMAND}
                     -DCXTPL_tool_PROGRAM=${CXTPL_tool_PROGRAM}
                     -DTHREADS=2
@@ -44,7 +44,7 @@ if(CXTPL_tool)
                     -DCXTPL_tool_LOG_CONFIG=".:=DBG8:default:console\;default=file:path=CXTPL_tool_for_${TARGET}.log,async=true,sync_level=DBG9\;console=stream:stream=stderr"
                     -P ${FindCXTPL_tool_LIST_DIR}/run_CXTPL_tool.cmake )
 
-          add_dependencies(${TARGET} CXTPL_tool_target_for_${TARGET})
+          add_dependencies(${TARGET} CXTPL_tool_target_for_${TARGET}_${GUID})
         endfunction(target_add_CXTPL_tool)
 
     else(CXTPL_tool_PROGRAM)
