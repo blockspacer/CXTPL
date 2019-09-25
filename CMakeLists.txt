@@ -49,7 +49,7 @@ set( USED_BOOST_LIBS
   Boost::thread
   CACHE INTERNAL "USED_BOOST_LIBS" )
 
-add_library(CXTPL_core
+add_library(CXTPL_core STATIC
   # sources
   ${CMAKE_CURRENT_SOURCE_DIR}/src/core/CXTPL.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/core/defaults/defaults.cpp
