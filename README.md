@@ -214,6 +214,8 @@ Example of log configuration which writes both into the file and console stream:
 
 `--single_task_timeout_ms` to limit execution time for singe input file (performs check after task completion to stop other tasks from running).
 
+`--version` to get tool version
+
 ## How to use with CMake project
 
 Suppose you need to generate code based on template files before building `TARGET_NAME_HERE`.

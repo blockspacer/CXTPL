@@ -687,7 +687,7 @@ int main(int argc, char* argv[]) {
       return EXIT_SUCCESS;
     }
 
-    if (vm.count(version_arg_name)) {
+    if (vm.count("version") || vm.count("V")) {
       XLOG(INFO) << CXTPL_tool_VERSION;
       return EXIT_SUCCESS;
     }
