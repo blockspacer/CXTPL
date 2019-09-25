@@ -22,7 +22,8 @@ cmake -E make_directory _build
 # cd _build
 pushd _build
 
-cmake -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=OFF ..
+# CMAKE_POSITION_INDEPENDENT_CODE for -fPIC
+cmake -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON ..
 
 make -j $(nproc)
 
