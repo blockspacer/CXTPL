@@ -772,7 +772,6 @@ int main(int argc, char* argv[]) {
       XLOG(ERR) << resdir_arg.value() << " must be directory";
       return EXIT_FAILURE;
     }
-    fs::current_path(resdir_arg.value());
   }
 
   auto chrono_then = std::chrono::steady_clock::now();
