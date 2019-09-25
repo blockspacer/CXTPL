@@ -90,7 +90,10 @@
 #include <glog/logging.h>
 
 #include "core/errors/errors.hpp"
+
 #include "core/CXTPL.hpp"
+
+#include "version.hpp"
 
 namespace po = boost::program_options;
 
@@ -632,6 +635,7 @@ int main(int argc, char* argv[]) {
     const char* out_arg_name = "output_files,O";
     const char* srcdir_arg_name = "srcdir,S";
     const char* resdir_arg_name = "resdir,R";
+    const char* version_arg_name = "version,V";
     const char* threads_arg_name = "threads,J";
     const char* log_arg_name = "log,L";
     const char* global_timeout_arg_name = "global_timeout_ms,G";
@@ -646,6 +650,7 @@ int main(int argc, char* argv[]) {
 
     desc.add_options()
       (help_arg_name, "produce help message")
+      (version_arg_name, "produce version message")
       (threads_arg_name, po::value(&threads_arg)->default_value(2), "number of threads")
       (log_arg_name, po::value(&log_config)->default_value(boost::none, ""), "log configuration")
       (global_timeout_arg_name, po::value<int>(&global_timeout_arg)->default_value(0), "global timeout")
@@ -679,6 +684,11 @@ int main(int argc, char* argv[]) {
 
     if (vm.count(help_arg_name)) {
       XLOG(INFO) << desc;
+      return EXIT_SUCCESS;
+    }
+
+    if (vm.count(version_arg_name)) {
+      XLOG(INFO) << CXTPL_tool_VERSION;
       return EXIT_SUCCESS;
     }
 

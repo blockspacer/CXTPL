@@ -1,9 +1,9 @@
 ﻿cmake_minimum_required(VERSION 3.1.3)
 
-# Building as separate project.
 set(PROJECT_NAME CXTPL)
 set(PROJECT_VERSION 1.0.1)
 
+# Building as separate project.
 project(
   ${PROJECT_NAME}
   VERSION ${PROJECT_VERSION}

@@ -1,7 +1,12 @@
 ﻿cmake_minimum_required( VERSION 3.10.0 FATAL_ERROR )
 
+set(PROJECT_NAME CXTPL_tool)
+set(PROJECT_VERSION 1.0.1)
+
 # Building as separate project.
-project(CXTPL_tool)
+project(${PROJECT_NAME}
+  VERSION ${PROJECT_VERSION}
+  LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -79,5 +84,15 @@ target_compile_options(CXTPL_tool PRIVATE
 
 set_target_properties(CXTPL_tool
   PROPERTIES ENABLE_EXPORTS 1)
+
+target_include_directories(CXTPL_tool PUBLIC
+  ${PROJECT_BINARY_DIR} # path to version.hpp
+)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/includes/version.hpp.in
+  ${PROJECT_BINARY_DIR}/version.hpp)
+
+set_source_files_properties(${PROJECT_BINARY_DIR}/version.hpp
+  PROPERTIES GENERATED 1)
 
 install(TARGETS CXTPL_tool DESTINATION bin)
