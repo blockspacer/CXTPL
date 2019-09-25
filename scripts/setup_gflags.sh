@@ -9,10 +9,12 @@ cmake -E make_directory ~/Downloads
 
 pushd ~/Downloads
 
+# CMAKE_POSITION_INDEPENDENT_CODE for -fPIC
+
 wget https://github.com/gflags/gflags/archive/v2.2.2.tar.gz && \
 tar zxf v2.2.2.tar.gz && \
 rm -f v2.2.2.tar.gz && \
 cd gflags-2.2.2 && \
-cmake -DGFLAGS_BUILD_SHARED_LIBS=OFF -DGFLAGS_BUILD_STATIC_LIBS=ON && \
+cmake -DGFLAGS_BUILD_SHARED_LIBS=OFF -DGFLAGS_BUILD_STATIC_LIBS=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON && \
 make && \
 make install
