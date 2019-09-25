@@ -14,6 +14,9 @@ pushd submodules/folly
 
 git submodule update --init --recursive
 
+# store rev before patches
+prev_rev_parse=$(git rev-parse HEAD)
+
 # fix for https://github.com/facebook/folly/issues/976
 cat ../../patches/folly/0001-clang-cling-support.patch | git am
 
@@ -28,6 +31,18 @@ cmake -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDEN
 make -j $(nproc)
 
 make install # with either sudo or DESTDIR as necessary
+
+# Revert patches after install:
+# NOTE: git reset --hard '@{u}' deletes all your local changes on
+# the current branch, including commits.
+# git reset --hard '@{u}'
+# NOTE: Deletes the most recent commit:
+# git reset --hard HEAD~1
+# NOTE: reset –hard to set the current branch HEAD to the commit you want.
+git reset --hard $prev_rev_parse
+# NOTE: git clean -f -d to remove all the untracked
+# files in your working directory
+git clean -f -d
 
 # Clean after install:
 
