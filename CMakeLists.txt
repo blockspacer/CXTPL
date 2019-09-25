@@ -25,6 +25,8 @@ option(USE_FOLLY "Use facebook/folly library (Apache License 2.0)" ON)
 
 option(USE_RANG "Use RANG for coloring terminal" ON)
 
+option(BUILD_EXAMPLES "Use built-in examples" OFF)
+
 set( USED_SYSTEM_LIBS
   Threads::Threads # pthread, https://cmake.org/cmake/help/v3.13/module/FindThreads.html
   ${X11_LIBRARIES} # https://cmake.org/cmake/help/v3.13/module/FindX11.html
@@ -68,20 +70,31 @@ add_library(CXTPL_core STATIC
 #message(STATUS G3LOG_LIBRARIES1=${G3LOG_LIBRARIES})
 
 target_link_libraries(CXTPL_core PUBLIC
+  ${FOLLY_LIBRARIES}
   # system libs
   ${USED_SYSTEM_LIBS}
   # boost libs
   ${USED_BOOST_LIBS}
-  #${FOLLY_LIBRARIES}
   boost_outcome
   microsoft_gsl
   double-conversion
   # @note: Order matters https://stackoverflow.com/a/10269201/10904212
-  #${LIBIBERTY_LIBRARY} # used by folly
-  #${LIBEVENT_LIB} # used by folly
-  #${G3LOG_LIBRARIES} # used by folly
-  #glog
-  #gflags
+  ${LIBIBERTY_LIBRARY} # used by folly
+  ${LIBEVENT_LIB} # used by folly
+  ${LZ4_LIBRARY} # used by folly
+  ${LIBGFLAGS_LIBRARY} # used by folly
+  ${G3LOG_LIBRARIES} # used by folly
+  glog
+  gflags
+)
+
+target_include_directories(CXTPL_core PUBLIC
+  ${LIBIBERTY_INCLUDE_DIR} # used by folly
+  ${G3LOG_INCLUDE_DIR} # used by folly
+  ${LIBEVENT_INCLUDE_DIR} # used by folly
+  ${LZ4_INCLUDE_DIR} # used by folly
+  ${LIBGFLAGS_INCLUDE_DIR} # used by folly
+  ${FOLLY_INCLUDE_DIR}
 )
 
 target_include_directories(CXTPL_core PRIVATE
@@ -112,8 +125,10 @@ target_compile_definitions( CXTPL_core PUBLIC
 set_target_properties(CXTPL_core
   PROPERTIES ENABLE_EXPORTS 1)
 
-install(TARGETS CXTPL_core DESTINATION lib)
+install(TARGETS CXTPL_core DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
 
 add_subdirectory(tool)
 
-add_subdirectory(examples)
+if(BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif(BUILD_EXAMPLES)

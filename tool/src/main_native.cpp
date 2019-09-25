@@ -779,8 +779,8 @@ int main(int argc, char* argv[]) {
   if(resdir_arg.is_initialized() && !resdir_arg.value().empty()) {
     resdir_abs_path = fs::absolute(fs::path(resdir_arg.value()));
     if(!fs::is_directory(resdir_abs_path)) {
-      XLOG(ERR) << resdir_arg.value() << " must be directory";
-      return EXIT_FAILURE;
+      XLOG(WARNING) << "created directory " << resdir_abs_path;
+      fs::create_directories(resdir_abs_path);
     }
   }
 

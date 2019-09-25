@@ -64,3 +64,5 @@ target_compile_options(CXTPL_examples_simple PRIVATE
 
 set_target_properties(CXTPL_examples_simple
   PROPERTIES ENABLE_EXPORTS 1)
+
+add_dependencies(CXTPL_examples_simple CXTPL_tool)

@@ -50,6 +50,7 @@ set( USED_SYSTEM_LIBS
   CACHE INTERNAL "USED_SYSTEM_LIBS" )
 
 target_link_libraries(CXTPL_tool PUBLIC
+  ${FOLLY_LIBRARIES}
   # system libs
   ${USED_SYSTEM_LIBS}
   # boost libs
@@ -59,7 +60,6 @@ target_link_libraries(CXTPL_tool PUBLIC
   double-conversion
   # CXTPL
   CXTPL_core
-  ${FOLLY_LIBRARIES}
   # @note: Order matters https://stackoverflow.com/a/10269201/10904212
   ${LIBIBERTY_LIBRARY} # used by folly
   ${LIBEVENT_LIB} # used by folly
@@ -95,4 +95,4 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/includes/version.hpp.in
 set_source_files_properties(${PROJECT_BINARY_DIR}/version.hpp
   PROPERTIES GENERATED 1)
 
-install(TARGETS CXTPL_tool DESTINATION bin)
+install(TARGETS CXTPL_tool DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
