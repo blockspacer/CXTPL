@@ -8,14 +8,14 @@ namespace core {
 
 namespace defaults {
 
-const char* DefaultTags::openTagStart = CXTPL_TAG_OPENING "CX=";
+const char* DefaultTags::openTagStart = CXTPL_TAG_OPENING;
 
-// start: <CX=>
-// end: <=CX>
+// start: [[~
+// end: ~]]
 const PairTag DefaultTags::code_block
   = PairTag {
-    SingleTag{openTagStart, "", CXTPL_TAG_CLOSING},
-    SingleTag{CXTPL_TAG_OPENING "=CX", "", CXTPL_TAG_CLOSING},
+    SingleTag{openTagStart, "~", ""},
+    SingleTag{"", "~", CXTPL_TAG_CLOSING},
     [](std::string& result, const std::string& codeBetweenTags,
         const std::string& outVarName) {
       result += cpp_codegen::CodeGenerator::
@@ -23,11 +23,11 @@ const PairTag DefaultTags::code_block
     }
   };
 
-// start: <CX=l>
+// start: [[~]]
 // end: newline
 const PairTag DefaultTags::code_line
   = PairTag {
-    SingleTag{openTagStart, "l", CXTPL_TAG_CLOSING},
+    SingleTag{openTagStart, "~", CXTPL_TAG_CLOSING},
     SingleTag{CXTPL_NEWLINE, "", ""},
     [](std::string& result, const std::string& codeBetweenTags,
         const std::string& outVarName) {
@@ -36,12 +36,12 @@ const PairTag DefaultTags::code_line
     }
   };
 
-// start: <CX=r>
-// end: <=CX>
+// start: [[+
+// end: +]]
 const PairTag DefaultTags::code_append_raw
   = PairTag {
-      SingleTag{openTagStart, "r", CXTPL_TAG_CLOSING},
-      code_block.close_tag,
+      SingleTag{openTagStart, "+", ""},
+      SingleTag{"", "+", CXTPL_TAG_CLOSING},
       [](std::string& result, const std::string& codeBetweenTags,
           const std::string& outVarName) {
         result += cpp_codegen::CodeGenerator::
@@ -49,12 +49,12 @@ const PairTag DefaultTags::code_append_raw
       }
     };
 
-// start: <CX=s>
-// end: <=CX>
+// start: [[*
+// end: *]]
 const PairTag DefaultTags::code_append_as_string
   = PairTag {
-      SingleTag{openTagStart, "s", CXTPL_TAG_CLOSING},
-      code_block.close_tag,
+      SingleTag{openTagStart, "*", ""},
+      SingleTag{"", "*", CXTPL_TAG_CLOSING},
       [](std::string& result, const std::string& codeBetweenTags,
           const std::string& outVarName) {
         result += cpp_codegen::CodeGenerator::

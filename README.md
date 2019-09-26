@@ -10,10 +10,10 @@ Note: this project is provided as is, without any warranty (see License).
 Example (more below):
 ```
 <div> some template string here </div>
-<CX=> int valid_cpp_code_block_here = 0; <=CX>
-<CX=l> int and_valid_cpp_code_line_here = 0;
+[[~ int valid_cpp_code_block_here = 0; ~]]
+[[~]] int and_valid_cpp_code_line_here = 0;
 <div> another template string here </div>
-<div> C++ from template = <CX=s> valid_cpp_code_block_here <=CX> </div>
+<div> C++ from template = [[* valid_cpp_code_block_here *]] </div>
 ```
 
 You can pass C++ variables by pointers into cxtpl, that is very usefull if you want to use complex data structures as template parameters.
@@ -51,28 +51,28 @@ You need to `#include` all headers used by template generator in your app code. 
 
 cxtpl uses approach similar to `How to write a template engine in less than 30 lines of code` from https://bits.theorem.co/how-to-write-a-template-library/
 
-+ `<CX=>` means `start execution of C++ code while parsing template`. Requires `<=CX>` as closing tag.
-+ `<=CX>` means `end execution of C++ code while parsing template`
-+ `<CX=l>` means `start execution of C++ code while parsing template`. Requires newline (`\n`) as closing tag.
-+ `<CX=r>` means `add result of execution of C++ code to output while parsing template`. Result must be string. Requires `<=CX>` as closing tag.
-+ `<CX=s>` means `add result of execution of C++ code to output while parsing template`. Result will be converted to string (just wrapped in std::to_string). Requires `<=CX>` as closing tag.
++ `[[~` means `start execution of C++ code while parsing template`. Requires `~]]` as closing tag.
++ `~]]` means `end execution of C++ code while parsing template`
++ `[[~]]` means `start execution of C++ code while parsing template`. Requires newline (`\n`) as closing tag.
++ `[[+` means `add result of execution of C++ code to output while parsing template`. Result must be string. Requires `+]]` as closing tag.
++ `[[*` means `add result of execution of C++ code to output while parsing template`. Result will be converted to string (just wrapped in std::to_string). Requires `*]]` as closing tag.
 
 Example before template parsing/transpiling:
 ```
-<CX=> // parameters begin
+[[~ // parameters begin
 
 const std::string generator_path = "somepath";
 
 std::vector<std::string> generator_includes{"someinclude"};
 
 // parameters end
-/* no newline, see CX=l */ <=CX><CX=l>
+/* no newline, see CX=l */ ~]][[~]]
 // This is generated file. Do not modify directly.
-// Path to the code generator: <CX=r> generator_path <=CX>.
+// Path to the code generator: [[+ generator_path +]].
 
-<CX=l> for(const auto& fileName: generator_includes) {
-<CX=r> fileName /* CX=r used to append to cxtpl_output */ <=CX>
-<CX=l> } // end for
+[[~]] for(const auto& fileName: generator_includes) {
+[[+ fileName /* CX=r used to append to cxtpl_output */ +]]
+[[~]] } // end for
 ```
 
 Example after template parsing/transpiling:

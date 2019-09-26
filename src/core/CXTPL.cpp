@@ -201,9 +201,9 @@ outcome::result<Generator::EncloseTagResult, GeneratorErrorExtraInfo>
 
   if(close_pos == std::string::npos) {
     /// \note in normal mode following is valid code:
-    ///   <CX=> <CX=> <=CX> <=CX><=CX><=CX>
-    /// because `<CX=>` in the middle considered as C++ code
-    /// and we don`t check last `<=CX><=CX><=CX>`
+    ///   [[~ [[~ ~]] ~]]~]]~]]
+    /// because `[[~` in the middle considered as C++ code
+    /// and we don`t check last `~]]~]]~]]`
     /// (checks only for tag pairs because of performance reasons)
     return GeneratorErrorExtraInfo{
       GeneratorError::UNCLOSED_TAG,
