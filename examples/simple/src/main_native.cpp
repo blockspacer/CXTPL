@@ -25,8 +25,7 @@ int main(int argc, char* argv[]) {
   using namespace ::CXTPL::core::errors;
   CXTPL::core::Generator template_engine;
 
-  const outcome::result<std::string, GeneratorErrorExtraInfo> genResult
-    = template_engine.generate(R"raw(
+  const std::string input = R"raw(
 <CX=> // parameters begin
 
 const auto headerGuard
@@ -184,7 +183,10 @@ concrete<CX=l> /* no newline */
 
 <CX=r> endHeaderGuard(headerGuard) /* no newline */ <=CX><CX=l>
 
-    )raw");
+    )raw";
+
+  const outcome::result<std::string, GeneratorErrorExtraInfo> genResult
+    = template_engine.generate(input.c_str());
 
   auto chrono_then = std::chrono::steady_clock::now();
   long int diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -193,9 +195,28 @@ concrete<CX=l> /* no newline */
 
   if(genResult.has_error()) {
     if(genResult.error().ec == GeneratorError::EMPTY_INPUT) {
-      std::cout << "WARNING: genResult.has_error() EMPTY_INPUT" << std::endl;
+      ///\note assume not error, just empty file
+      std::cerr << "ERROR: empty string as Generator input\n";
+      return EXIT_FAILURE;
     } else {
-      std::cerr << "ERROR: genResult.has_error(): " << genResult.error().ec << std::endl;
+      std::cerr << "=== ERROR START ==="
+        << std::endl;
+      std::cerr << "ERROR message: " <<
+        make_error_code(genResult.error().ec).message()
+        << std::endl;
+      std::cerr << "ERROR category: " <<
+        " " << make_error_code(genResult.error().ec).category().name()
+        << std::endl;
+      std::cerr << "ERROR info: " <<
+        " " << genResult.error().extra_info
+        << std::endl;
+      std::cerr << "input data: "
+        /// \note limit to first 200 symbols
+        << input.substr(0, std::min(200UL, input.size()))
+        << "..." << std::endl;
+      // TODO: file path here
+      std::cerr << "=== ERROR END ==="
+        << std::endl;
       return EXIT_FAILURE;
     }
   }

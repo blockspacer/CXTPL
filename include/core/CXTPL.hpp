@@ -50,6 +50,14 @@ struct GeneratorTags {
 /// \brief used to generate C++ code from template
 class Generator {
  public:
+  struct Position {
+    long int index;
+  };
+
+  struct EncloseTagResult {
+    std::string tagCode;
+  };
+
 #if defined CXTPL_FS
   /// \brief used to generate C++ code from .cxtpl template file
   std::string generate(const fs::path& template_filepath) noexcept;
@@ -58,11 +66,34 @@ class Generator {
   /// \brief used to generate C++ code from template string
   outcome::result<std::string, errors::GeneratorErrorExtraInfo> generate(const char* template_source) noexcept;
 
-  /// \brief used to change parsed tags
-  GeneratorTags& tags() noexcept;
+  /// \brief used to modify parser tags
+  GeneratorTags& supported_tags() noexcept;
+
+  /// \brief used to change parser tags
+  void set_supported_tags(const GeneratorTags&) noexcept;
+
+ private:
+  /// \brief will be called when we found `openTagStart`
+  outcome::result<void, errors::GeneratorErrorExtraInfo> handleTagStart(
+    std::string_view& str, Generator::Position& pos, std::string& resultStr);
+
+  /// \brief will be called when we found supported tag after `openTagStart`
+  outcome::result<void, errors::GeneratorErrorExtraInfo> handleTag(
+      std::string_view& str, const PairTag& tag,
+      Generator::Position& curPos, std::string& resultStr);
+
+  outcome::result<EncloseTagResult, errors::GeneratorErrorExtraInfo> encloseTag(
+      std::string_view& processStr, Generator::Position& curPos,
+      const std::string& startTag, const std::string& closeTag);
+
+  outcome::result<std::string, errors::GeneratorErrorExtraInfo>
+    generateFromString();
 
  private:
   GeneratorTags GeneratorTags_;
+
+  ///\note used only for debug output
+  std::string_view original_str;
 };
 
 } // namespace core

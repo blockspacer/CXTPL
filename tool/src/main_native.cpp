@@ -483,7 +483,10 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
         " " << make_error_code(genResult.error().ec).category().name();
       XLOG(ERR) << "ERROR info: " <<
         " " << genResult.error().extra_info;
-      XLOG(ERR) << "input data: " << input;
+      XLOG(ERR) << "input data: "
+        /// \note limit to first 200 symbols
+        << input.substr(0, std::min(200UL, input.size()))
+        << "...";
       // TODO: file path here
       XLOG(ERR) << "=== ERROR END ===";
       //std::terminate(); // TODO: gracefull_shutdown
