@@ -61,6 +61,8 @@ target_link_libraries(CXTPL_examples_cmake_integration PUBLIC
 set(cxtpl_in_dir "${CMAKE_CURRENT_SOURCE_DIR}/resources/cxtpl")
 set(cxtpl_out_dir "${CMAKE_CURRENT_SOURCE_DIR}/resources/cxtpl/generated")
 
+file(REMOVE_RECURSE ${cxtpl_out_dir})
+
 target_include_directories(CXTPL_examples_cmake_integration PUBLIC
   ${LIBIBERTY_INCLUDE_DIR}
 
