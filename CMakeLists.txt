@@ -23,7 +23,7 @@ option(USE_G3LOG "Use g3log logger" ON)
 
 option(USE_FOLLY "Use facebook/folly library (Apache License 2.0)" ON)
 
-option(USE_RANG "Use RANG for coloring terminal" ON)
+option(USE_RANG "Use RANG for coloring terminal" OFF)
 
 option(BUILD_EXAMPLES "Use built-in examples" OFF)
 
