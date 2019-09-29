@@ -39,16 +39,11 @@ set( USED_SYSTEM_LIBS
 
 set( USED_BOOST_LIBS
   Boost::boost
-  Boost::atomic
-  Boost::chrono
-  Boost::date_time
+  Boost::context
   Boost::filesystem
-  Boost::graph
-  Boost::log
   Boost::program_options
   Boost::regex
   Boost::system
-  Boost::thread
   CACHE INTERNAL "USED_BOOST_LIBS" )
 
 add_library(CXTPL_core STATIC
@@ -73,19 +68,21 @@ target_link_libraries(CXTPL_core PUBLIC
   ${FOLLY_LIBRARIES}
   # system libs
   ${USED_SYSTEM_LIBS}
-  # boost libs
-  ${USED_BOOST_LIBS}
-  boost_outcome
-  microsoft_gsl
-  double-conversion
   # @note: Order matters https://stackoverflow.com/a/10269201/10904212
   ${LIBIBERTY_LIBRARY} # used by folly
+  ${DOUBLE_CONVERSION_LIBRARY} # used by folly
   ${LIBEVENT_LIB} # used by folly
   ${LZ4_LIBRARY} # used by folly
+  ${LIBUNWIND_LIBRARIES} # used by folly
+  ${LIBLZMA_LIBRARIES} # used by folly
   ${LIBGFLAGS_LIBRARY} # used by folly
   ${G3LOG_LIBRARIES} # used by folly
   glog
   gflags
+  # boost libs
+  ${USED_BOOST_LIBS}
+  boost_outcome
+  microsoft_gsl
 )
 
 target_include_directories(CXTPL_core PUBLIC
@@ -105,6 +102,9 @@ target_include_directories(CXTPL_core PRIVATE
 target_include_directories(CXTPL_core PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
+
+# POSITION_INDEPENDENT_CODE for -fPIC
+set_property(TARGET CXTPL_core PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 #target_compile_options(CXTPL_core PRIVATE
 #  -fno-rtti)

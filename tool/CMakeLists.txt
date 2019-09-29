@@ -50,24 +50,7 @@ set( USED_SYSTEM_LIBS
   CACHE INTERNAL "USED_SYSTEM_LIBS" )
 
 target_link_libraries(CXTPL_tool PUBLIC
-  ${FOLLY_LIBRARIES}
-  # system libs
-  ${USED_SYSTEM_LIBS}
-  # boost libs
-  ${USED_BOOST_LIBS}
-  boost_outcome
-  microsoft_gsl
-  double-conversion
-  # CXTPL
   CXTPL_core
-  # @note: Order matters https://stackoverflow.com/a/10269201/10904212
-  ${LIBIBERTY_LIBRARY} # used by folly
-  ${LIBEVENT_LIB} # used by folly
-  ${LZ4_LIBRARY} # used by folly
-  ${LIBGFLAGS_LIBRARY} # used by folly
-  ${G3LOG_LIBRARIES} # used by folly
-  glog
-  gflags
 )
 
 target_include_directories(CXTPL_tool PUBLIC
@@ -84,6 +67,9 @@ target_compile_options(CXTPL_tool PRIVATE
 
 set_target_properties(CXTPL_tool
   PROPERTIES ENABLE_EXPORTS 1)
+
+# POSITION_INDEPENDENT_CODE for -fPIC
+set_property(TARGET CXTPL_tool PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(CXTPL_tool PUBLIC
   ${PROJECT_BINARY_DIR} # path to version.hpp

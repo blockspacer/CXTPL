@@ -5,7 +5,7 @@
 #
 # If you have built boost statically you will need to set the Boost_USE_STATIC_LIBS CMake variable to ON
 # also don`t forget to set DBOOST_LOG_DYN_LINK https://stackoverflow.com/a/17868918/10904212
-# set( Boost_USE_STATIC_LIBS FALSE )
+# set( Boost_USE_STATIC_LIBS TRUE )
 # set( Boost_USE_STATIC_RUNTIME FALSE )
 # set( Boost_USE_MULTITHREADED TRUE )
 set( BOOST_ROOT CACHE STRING /usr )
@@ -13,7 +13,13 @@ set( Boost_ADDITIONAL_VERSIONS "1.62 1.63 1.64 1.65 1.66 1.67 1.68 1.69" )
 set( BOOST_LIBS CACHE STRING ${BOOST_ROOT}/lib )
 
 find_package( Boost
-  COMPONENTS program_options filesystem regex date_time system thread graph log
+  COMPONENTS
+  context
+  filesystem
+  program_options
+  regex
+  system
+  thread
   REQUIRED )
 
 add_library( boost_outcome INTERFACE )
@@ -71,10 +77,22 @@ find_package(Gflags REQUIRED)
 message(STATUS "LIBGFLAGS_LIBRARY=${LIBGFLAGS_LIBRARY}")
 message(STATUS "LIBGFLAGS_INCLUDE_DIR=${LIBGFLAGS_INCLUDE_DIR}")
 
+find_package(libunwind REQUIRED)
+message(STATUS "LIBUNWIND_LIBRARIES=${LIBUNWIND_LIBRARIES}")
+message(STATUS "LIBUNWIND_INCLUDE_DIR=${LIBUNWIND_INCLUDE_DIR}")
+
+find_package(LibLZMA REQUIRED)
+message(STATUS "LIBLZMA_INCLUDE_DIRS=${LIBLZMA_INCLUDE_DIRS}")
+message(STATUS "LIBLZMA_LIBRARIES=${LIBLZMA_LIBRARIES}")
+
 find_package(LZ4 REQUIRED)
+message(STATUS "LIBLZMA_INCLUDE_DIRS=${LZ4_INCLUDE_DIR}")
+message(STATUS "LIBLZMA_LIBRARIES=${LZ4_LIBRARY}")
+
+find_package(DoubleConversion MODULE REQUIRED)
+message(STATUS "LIBLZMA_INCLUDE_DIRS=${DOUBLE_CONVERSION_LIBRARY}")
+message(STATUS "LIBLZMA_LIBRARIES=${DOUBLE_CONVERSION_INCLUDE_DIR}")
 
 find_package(LibEvent REQUIRED)
 message(STATUS "LZ4_LIBRARY=${LZ4_LIBRARY}")
 message(STATUS "LZ4_LIBRARY_DEBUG=${LZ4_LIBRARY_DEBUG}")
-message(STATUS "LZ4_LIBRARY_RELEASE=${LZ4_LIBRARY_RELEASE}")
-message(STATUS "LZ4_INCLUDE_DIR=${LZ4_INCLUDE_DIR}")
