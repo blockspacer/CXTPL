@@ -138,6 +138,9 @@ bash scripts/install_gtest.sh
 # gflags
 bash scripts/install_gflags.sh
 
+# NOTE: need libunwind with -fPIC (POSITION_INDEPENDENT_CODE) support
+bash scripts/install_libunwind.sh
+
 # folly
 # NOTE: we patched folly for clang support https://github.com/facebook/folly/issues/976
 bash scripts/install_folly.sh
