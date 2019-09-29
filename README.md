@@ -135,6 +135,9 @@ bash scripts/install_g3log.sh
 # gtest
 bash scripts/install_gtest.sh
 
+# gflags
+bash scripts/install_gflags.sh
+
 # folly
 # NOTE: we patched folly for clang support https://github.com/facebook/folly/issues/976
 bash scripts/install_folly.sh
