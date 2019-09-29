@@ -158,7 +158,7 @@ cmake -E make_directory build
 
 ```
 # configure
-cmake -E chdir build cmake -E time cmake -DBUILD_EXAMPLES=TRUE -DENABLE_CLING=FALSE -DCMAKE_BUILD_TYPE=Debug ..
+cmake -E chdir build cmake -E time cmake -DBUILD_EXAMPLES=FALSE -DENABLE_CLING=FALSE -DCMAKE_BUILD_TYPE=Debug ..
 # build
 cmake -E chdir build cmake -E time cmake --build . -- -j6
 ```
