@@ -422,7 +422,7 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
 
   folly::IOBufQueue buf;
   try {
-    const fs::path in_abs_path = fs::absolute(in_path, srcdir_abs_path);
+    const fs::path in_abs_path = fs::absolute(srcdir_abs_path / in_path);
     XLOG(DBG9) << "started reading file " << in_abs_path;
     auto in_file = std::make_unique<folly::File>(in_abs_path);
     while (in_file) {
@@ -508,7 +508,7 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
 
   // see folly/io/async/AsyncPipe.cpp#L223
   try {
-    const fs::path out_abs_path = fs::absolute(out_path, resdir_abs_path);
+    const fs::path out_abs_path = fs::absolute(resdir_abs_path / out_path);
     XLOG(DBG9) << "started writing into file " << out_abs_path;
     if(!atomicallyWriteFileToDisk(genResult.value(), out_abs_path)) {
       XLOG(ERR) << "ERROR: can`t write to file " << out_abs_path;
