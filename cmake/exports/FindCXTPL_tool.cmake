@@ -42,6 +42,19 @@ if(CXTPL_tool)
         PROPERTIES GENERATED TRUE
       )
 
+      string (REPLACE ";" " " INPUTS_as_string "${INPUTS}")
+      string (REPLACE ";" " " OUTPUTS_as_string "${OUTPUTS}")
+      # NOTE: regen files at configure step
+      execute_process(
+        COMMAND ${CMAKE_COMMAND}
+                -DCXTPL_tool_PROGRAM=${CXTPL_tool_PROGRAM}
+                -DTHREADS=2
+                -DINPUTS=${INPUTS_as_string}
+                -DOUTPUTS=${OUTPUTS_as_string}
+                -DCXTPL_tool_LOG_CONFIG=.:=DBG9:default:console\;default=file:path=CXTPL_tool_for_${TARGET}.log,async=true,sync_level=DBG9\;console=stream:stream=stderr
+                -P ${FindCXTPL_tool_LIST_DIR}/run_CXTPL_tool.cmake )
+
+      # NOTE: regen files at build step
       add_custom_target(CXTPL_tool_target_for_${TARGET}_${GUID} ALL
         COMMAND ${CMAKE_COMMAND}
                 -DCXTPL_tool_PROGRAM=${CXTPL_tool_PROGRAM}
