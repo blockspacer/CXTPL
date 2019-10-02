@@ -333,7 +333,7 @@ Please note that this project is released with a [Code of Conduct](CODE_OF_CONDU
 - C++ Developer
 - [![github-alt][github-img]](https://github.com/blockspacer)
 - [![github-alt][github-img]](https://github.com/derofim)
-- [:fa-linkedin:](https://www.linkedin.com/in/denis-trofimov-4335bb13b/)
+- [](https://www.linkedin.com/in/denis-trofimov-4335bb13b/)
 
 ## Similar projects
 + (compile-time) https://github.com/burner/sweet.hpp/tree/master/amber
