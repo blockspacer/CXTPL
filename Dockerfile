@@ -435,10 +435,11 @@ RUN update-ca-certificates --fresh
 #USER docker
 
 # TODO https://stackoverflow.com/a/40465312
-# git submodule deinit --all -f
+# RUN git submodule deinit -f . || true
+RUN git pull --recurse-submodules || true
 RUN git submodule sync --recursive || true
 RUN git fetch --recurse-submodules || true
-RUN git submodule update --init --recursive --depth 5 || true
+RUN git submodule update --init --recursive --depth 50 || true
 RUN git submodule update --force --recursive --init --remote || true
 RUN ls -artl /opt/cxtpl/
 RUN ls -artl /opt/cxtpl/scripts
