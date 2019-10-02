@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <iterator>
 #include <exception>
 #include <string>
@@ -69,7 +69,6 @@
 #include <folly/experimental/TimerFDTimeoutManager.h>
 #include <folly/experimental/STTimerFDTimeoutManager.h>
 #include <folly/io/async/test/Util.h>
-//#include <folly/Benchmark.h>
 #include <folly/experimental/STTimerFDTimeoutManager.h>
 #include <folly/experimental/TimerFDTimeoutManager.h>
 #include <folly/io/async/test/UndelayedDestruction.h>
@@ -452,7 +451,6 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
 
   if(buf.empty() || buf.front()->empty()) {
     XLOG(WARNING) << "WARNING: empty input from file " << in_path;
-    //continue;
     return;
   }
 
@@ -590,7 +588,6 @@ static void run_generation() {
       tout = global_timeout.value();
     }
 
-    //tout = std::chrono::milliseconds{500};
 
     typedef folly::UndelayedDestruction<folly::HHWheelTimerHighRes> StackWheelTimerUs;
 
@@ -643,8 +640,6 @@ int main(int argc, char* argv[]) {
     const char* log_arg_name = "log,L";
     const char* global_timeout_arg_name = "global_timeout_ms,G";
     const char* single_task_timeout_arg_name = "single_task_timeout_ms,T";
-    /*const char* log_verbosity_name = "logverbosity,V";
-    const char* minloglevel_name = "minloglevel,L";*/
 
     po::options_description desc("Allowed options");
 
@@ -658,8 +653,6 @@ int main(int argc, char* argv[]) {
       (log_arg_name, po::value(&log_config)->default_value(boost::none, ""), "log configuration")
       (global_timeout_arg_name, po::value<int>(&global_timeout_arg)->default_value(0), "global timeout")
       (single_task_timeout_arg_name, po::value<int>(&single_task_timeout_arg)->default_value(0), "single task timeout")
-      //(log_verbosity_name, po::value(&log_verbosity)->default_value(9), "log verbosity")
-      //(minloglevel_name, po::value(&minloglevel)->default_value(0), "minloglevel")
       (resdir_arg_name, po::value(&resdir_arg)->default_value(boost::none, ""), "change output directory path (where to place generated files)")
       (srcdir_arg_name, po::value(&srcdir_arg)->default_value(boost::none, ""), "change current working directory path (path to template files)")
       (in_arg_name, po::value(&in_args)->multitoken(), "list of template files that must be used for C++ code generation")
