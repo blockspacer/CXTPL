@@ -63,7 +63,7 @@ ENV LANGUAGE en_US:en
 
 ENV PATH=/usr/lib/clang/6.0/include:/usr/lib/llvm-6.0/include/:$PATH
 
-ARG APT="DEBIAN_FRONTEND=noninteractive apt-get -qq --no-install-recommends"
+ARG APT="apt-get -qq --no-install-recommends"
 
 # docker build --build-arg NO_SSL="False" APT="apt-get -qq --no-install-recommends" .
 ARG NO_SSL="True"
@@ -428,13 +428,6 @@ WORKDIR /opt
 #     make install
 # RUN rm -rf /opt/build-gtest
 
-WORKDIR /opt
-
-COPY . /opt/cxtpl
-# RUN git clone --depth=1 --recurse-submodules --single-branch --branch=master https://github.com/blockspacer/cxtpl.git
-
-WORKDIR /opt/cxtpl
-
 # openssl: relocation error: openssl: symbol EVP_mdc2 version OPENSSL_1_1_0 not defined in file libcrypto.so.1.1 with link time reference
 # https://stackoverflow.com/a/51565653/1373413
 # RUN cmake -E make_directory /opt/openssl
@@ -454,6 +447,18 @@ RUN update-ca-certificates --fresh
 # switch back to custom user
 #USER docker
 
+WORKDIR /opt/
+
+COPY . /opt/cxtpl
+
+# RUN git clone --depth=1 --recurse-submodules --single-branch --branch=master https://github.com/blockspacer/cxtpl.git
+
+WORKDIR /opt/cxtpl
+
+# need some git config to apply git patch
+RUN git config --global user.email "you@example.com"
+RUN git config --global user.name "Your Name"
+
 # TODO https://stackoverflow.com/a/40465312
 # RUN git submodule deinit -f . || true
 RUN git pull --recurse-submodules || true
@@ -465,23 +470,28 @@ RUN ls -artl /opt/cxtpl/
 RUN ls -artl /opt/cxtpl/scripts
 RUN ls -artl /opt/cxtpl/submodules
 
+WORKDIR /opt/cxtpl
+
 # CMake
 RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_cmake.sh"]
-
-WORKDIR /opt/cxtpl/submodules/CXTPL
+RUN /bin/bash -c "source /opt/cxtpl/scripts/install_cmake.sh"
 
 # g3log
 RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_g3log.sh"]
+RUN /bin/bash -c "source /opt/cxtpl/scripts/install_g3log.sh"
 
 # gtest
 RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_gtest.sh"]
+RUN /bin/bash -c "source /opt/cxtpl/scripts/install_gtest.sh"
 
 # gflags
 RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_gflags.sh"]
+RUN /bin/bash -c "source /opt/cxtpl/scripts/install_gflags.sh"
 
 # folly
 # NOTE: we patched folly for clang support https://github.com/facebook/folly/issues/976
 RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_folly.sh"]
+RUN /bin/bash -c "source /opt/cxtpl/scripts/install_folly.sh"
 
 RUN export CC=gcc
 RUN export CXX=g++
