@@ -336,3 +336,17 @@ Please note that this project is released with a [Code of Conduct](CODE_OF_CONDU
 + (run-time) https://github.com/jinja2cpp/Jinja2Cpp
 + (Rust) Type-safe, compiled Jinja-like templates for Rust https://github.com/djc/askama
 + (article) https://dzone.com/articles/modern-type-safe-template-engines
+
+[twitter-alt]: Twitter
+[facebook-alt]: Facebook
+[google-alt]: Google+
+[tumblr-alt]: Tumblr
+[dribbble-alt]: Dribbble
+[github-alt]: GitHub
+
+[twitter-img]: https://i.imgur.com/wWzX9uB.png
+[facebook-img]: https://i.imgur.com/fep1WsG.png
+[google-img]: https://i.imgur.com/VlgBKQ9.png
+[tumblr-img]: https://i.imgur.com/jDRp47c.png
+[dribbble-img]: https://i.imgur.com/Vvy3Kru.png
+[github-img]: https://i.imgur.com/9I6NRUm.png
