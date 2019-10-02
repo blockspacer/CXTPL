@@ -101,3 +101,6 @@ saved/
 *.autosave
 
 node_modules/
+
+.ca-certificates/**
+!.ca-certificates/.gitkeep
