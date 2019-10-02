@@ -5,7 +5,7 @@
 
 set -ev
 
-ls submodules/folly
+#ls submodules/folly
 
 cmake -E make_directory submodules/folly
 
@@ -23,14 +23,18 @@ cat ../../patches/folly/0001-clang-cling-support.patch | git am
 cmake -E make_directory _build
 
 # cd _build
-pushd _build
+#pushd _build
+
+ls -artl
+
+ls -artl CMake
 
 # CMAKE_POSITION_INDEPENDENT_CODE for -fPIC
-cmake -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON ..
+cmake -E chdir _build cmake -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON ..
 
-make -j $(nproc)
+cmake -E chdir _build make -j $(nproc)
 
-make install # with either sudo or DESTDIR as necessary
+cmake -E chdir _build make install # with either sudo or DESTDIR as necessary
 
 # Revert patches after install:
 # NOTE: git reset --hard '@{u}' deletes all your local changes on
@@ -38,7 +42,7 @@ make install # with either sudo or DESTDIR as necessary
 # git reset --hard '@{u}'
 # NOTE: Deletes the most recent commit:
 # git reset --hard HEAD~1
-# NOTE: reset –hard to set the current branch HEAD to the commit you want.
+# NOTE: reset ï¿½hard to set the current branch HEAD to the commit you want.
 git reset --hard $prev_rev_parse
 # NOTE: git clean -f -d to remove all the untracked
 # files in your working directory
@@ -47,6 +51,6 @@ git clean -f -d
 # Clean after install:
 
 # cd ..
-pushd ..
+#pushd ..
 
 cmake -E remove_directory _build
