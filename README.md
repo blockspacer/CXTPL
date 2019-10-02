@@ -1,4 +1,18 @@
-﻿# About CXTPL (C++ template engine)
+﻿![Open Source Love](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-pink.svg)
+![First Timers Only](https://img.shields.io/badge/first--timers--only-friendly-blue.svg?style=flat)
+![Up For Grabs](https://img.shields.io/badge/up--for--grabs-friendly-green.svg?style=flat)
+
+![GitHub](https://img.shields.io/github/license/blockspacer/CXXCTP.svg)
+![GitHub forks](https://img.shields.io/github/forks/blockspacer/CXXCTP.svg)
+![GitHub issues](https://img.shields.io/github/issues/blockspacer/CXXCTP.svg)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/blockspacer/CXXCTP.svg)
+![GitHub contributors](https://img.shields.io/github/contributors/blockspacer/CXXCTP.svg)
+![GitHub commit activity the past week, 4 weeks, year](https://img.shields.io/github/commit-activity/w/blockspacer/CXXCTP.svg)
+![GitHub last commit](https://img.shields.io/github/last-commit/blockspacer/CXXCTP.svg)
+![GitHub top language](https://img.shields.io/github/languages/top/blockspacer/CXXCTP.svg)
+![GitHub language count](https://img.shields.io/github/languages/count/blockspacer/CXXCTP.svg)
+
+# 📚 About CXTPL (C++ template engine)
 
 Template engine with full C++ power (transpiles template to valid C++ code, supports Cling, e.t.c.).
 
@@ -93,8 +107,10 @@ Usefull links:
 
 ### Clone code
 ```
+# git submodule deinit --all -f
 git submodule sync --recursive
-git submodule update --init --recursive --depth 50
+git fetch --recurse-submodules
+git submodule update --init --recursive --depth 5
 # or
 git submodule update --force --recursive --init --remote
 ```
@@ -278,6 +294,37 @@ Usefull links:
 RTTI enabled only in command line tool (CXTPL_tool), RTTI required by boost.po.
 
 CXTPL library disabled RTTI and uses BOOST_NO_RTTI/BOOST_NO_TYPEID (as private cmake config).
+
+## ⭐️ How to Contribute
+
+Please read our [contributing](CONTRIBUTING.md) guidelines before making your pull request.
+
+## Code of Conduct
+
+Please note that this project is released with a [Code of Conduct](CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
+
+### Contributors List: Example Profile
+
+- I'm an example that you can copy, if you want :)
+- I work on many things like...
+- My hobbies include...
+- [![twitter-alt][twitter-img]](https://twitter.com/example)
+  [![facebook-alt][facebook-img]](https://facebook.com/example)
+  [![google-img][google-img]](https://plus.google.com/+Example)
+  [![tumblr-alt][tumblr-img]](https://example.tumblr.com)
+  [![dribbble-alt][dribbble-img]](https://dribbble.com/example)
+  [![github-alt][github-img]](https://github.com/example)
+  [![freeCodeCamp](imgs/freecodecamp.png)](https://www.freecodecamp.org/example)
+
+# Contributors List 👌
+
+# D
+
+### Denis trofimov
+- C++ Developer
+- [![github-alt][github-img]](https://github.com/blockspacer)
+- [![github-alt][github-img]](https://github.com/derofim)
+- [linkedin](https://www.linkedin.com/in/denis-trofimov-4335bb13b/)
 
 ## Similar projects
 + (compile-time) https://github.com/burner/sweet.hpp/tree/master/amber
