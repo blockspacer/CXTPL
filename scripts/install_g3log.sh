@@ -16,4 +16,4 @@ cmake ../../submodules/g3log -DBUILD_STATIC_LIBS=ON -DG3_SHARED_LIB=OFF -DBUILD_
 
 cmake --build . --config Release --clean-first -- -j4
 
-sudo make install
+make install
