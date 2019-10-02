@@ -369,6 +369,7 @@ Please note that this project is released with a [Code of Conduct](CODE_OF_CONDU
   [![dribbble-alt][dribbble-img]](https://dribbble.com/example)
   [![github-alt][github-img]](https://github.com/example)
   [![freeCodeCamp](imgs/freecodecamp.png)](https://www.freecodecamp.org/example)
+  [![linkedin-alt][<img src="imgs/linkedin.svg" width="20" height="20">](https://www.linkedin.com/in/example/)
 
 ### Contributors List 👌
 
@@ -380,6 +381,7 @@ Please note that this project is released with a [Code of Conduct](CODE_OF_CONDU
 - [![github-alt][github-img]](https://github.com/blockspacer)
 - [![github-alt][github-img]](https://github.com/derofim)
 - [![linkedin-alt][linkedin-img](https://www.linkedin.com/in/denis-trofimov-4335bb13b/)
+- [![linkedin-alt][<img src="imgs/linkedin.svg" width="20" height="20">](https://www.linkedin.com/in/denis-trofimov-4335bb13b/)
 
 ## Similar projects
 
@@ -406,4 +408,3 @@ Please note that this project is released with a [Code of Conduct](CODE_OF_CONDU
 [tumblr-img]: https://i.imgur.com/jDRp47c.png
 [dribbble-img]: https://i.imgur.com/Vvy3Kru.png
 [github-img]: https://i.imgur.com/9I6NRUm.png
-[linkedin-img]: imgs/linkedin.svg =20x20
