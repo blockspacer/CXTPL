@@ -406,4 +406,4 @@ Please note that this project is released with a [Code of Conduct](CODE_OF_CONDU
 [tumblr-img]: https://i.imgur.com/jDRp47c.png
 [dribbble-img]: https://i.imgur.com/Vvy3Kru.png
 [github-img]: https://i.imgur.com/9I6NRUm.png
-[linkedin-img]: imgs/linkedin.svg
+[linkedin-img]: imgs/linkedin.svg =20x20
