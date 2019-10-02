@@ -353,12 +353,21 @@ RUN echo "               151.101.113.63:443" >> $HOME/.pip/pip.conf
 # RUN cat $HOME/.pip/pip.conf
 
 WORKDIR /opt
+
+# pip install setuptools --upgrade
+
+# /usr/lib/python3.6/distutils/dist.py:261: UserWarning: Unknown distribution option: 'long_description_content_type'
+RUN pip3 install --index-url=https://pypi.python.org/simple/ --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org wheel
+
+RUN pip3 install --index-url=https://pypi.python.org/simple/ --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org virtualenv
+
 #RUN git clone https://github.com/conan-io/conan.git
 #WORKDIR /opt/conan
 RUN pip3 install --index-url=https://pypi.python.org/simple/ --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org conan
 #RUN pip3 install --index-url=https://pypi.python.org/simple/ --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org -r conans/requirements.txt
 #WORKDIR /opt
 
+# /usr/lib/python3.6/distutils/dist.py:261: UserWarning: Unknown distribution option: 'long_description_content_type'
 RUN pip3 install --index-url=https://pypi.python.org/simple/ --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org conan_package_tools
 
 WORKDIR /opt
