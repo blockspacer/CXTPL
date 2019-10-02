@@ -116,13 +116,14 @@ git submodule update --force --recursive --init --remote
 ```
 
 ## DEPENDENCIES
+# [Boost](https://www.boost.org/)
 ```
-# Boost
 sudo add-apt-repository ppa:boost-latest/ppa
 sudo apt-get update && sudo apt-get upgrade
 aptitude search boost
 sudo apt-get install libboost-dev
-
+```
+```
 # MPI
 sudo apt-get install openmpi-bin openmpi-common libopenmpi-dev
 
