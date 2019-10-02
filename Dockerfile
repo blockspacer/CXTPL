@@ -54,21 +54,15 @@ FROM        ubuntu:18.04
 # RUN export DEBIAN_FRONTEND=noninteractive
 # Set it via ARG as this only is available during build:
 ARG DEBIAN_FRONTEND=noninteractive
-
-ENV LC_ALL C.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-#ENV TERM screen
-
-ENV PATH=/usr/lib/clang/6.0/include:/usr/lib/llvm-6.0/include/:$PATH
-
-ARG APT="apt-get -qq --no-install-recommends"
-
 # docker build --build-arg NO_SSL="False" APT="apt-get -qq --no-install-recommends" .
 ARG NO_SSL="True"
+ARG APT="apt-get -qq --no-install-recommends"
 
-# https://www.peterbe.com/plog/set-ex
-RUN set -ex
+ENV LC_ALL=C.UTF-8 \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    #TERM=screen \
+    PATH=/usr/lib/clang/6.0/include:/usr/lib/llvm-6.0/include/:$PATH
 
 # NO_SSL usefull under proxy, you can disable it with --build-arg NO_SSL="False"
 # Also change http-proxy.conf and ~/.docker/config.json like so https://medium.com/@saniaky/configure-docker-to-use-a-host-proxy-e88bd988c0aa
@@ -79,7 +73,9 @@ RUN set -ex
 #
 # (!!!) Turns off SSL verification on the whole system (!!!)
 #
-RUN if [ "$NO_SSL" = "True" ]; then \
+# https://www.peterbe.com/plog/set-ex
+RUN set -ex \
+    if [ "$NO_SSL" = "True" ]; then \
     echo 'NODE_TLS_REJECT_UNAUTHORIZED=0' >> ~/.bashrc \
     && \
     echo "strict-ssl=false" >> ~/.npmrc \
@@ -116,26 +112,62 @@ RUN if [ "$NO_SSL" = "True" ]; then \
     && \
     echo "insecure" >> ~/.curlrc \
     ; \
+  fi \
+  && \
+  $APT update \
+  && \
+  $APT install -y --reinstall software-properties-common \
+  && \
+  $APT install -y gnupg2 wget \
+  && \
+  wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key --no-check-certificate | apt-key add - \
+  && \
+  apt-key adv --keyserver-options http-proxy=$http_proxy --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F \
+  && \
+  apt-key adv --keyserver-options http-proxy=$http_proxy --keyserver keyserver.ubuntu.com --recv-keys 2EA8F35793D8809A \
+  && \
+  apt-key adv --keyserver-options http-proxy=$http_proxy --fetch-keys http://llvm.org/apt/llvm-snapshot.gpg.key \
+  && \
+  apt-add-repository -y "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $(lsb_release -sc) main" \ 
+  && \
+  apt-add-repository -y "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main" \
+  && \
+  apt-add-repository -y "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main" \
+  && \
+  apt-add-repository -y "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main" \
+  && \
+  apt-add-repository -y "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-8 main" \
+  && \
+  $APT update \
+  && \
+  $APT install -y \
+                    ca-certificates \
+                    software-properties-common \
+                    git \
+                    wget \
+                    locales \
+  && \
+  $APT install -y \
+                    make \
+                    git \
+                    curl \
+                    vim \
+                    vim-gnome \
+                    cmake 
+  && \
+  if "$NO_SSL" = "True" ]; then \
+    git config --global http.sslVerify false\
+    && \
+    git config --global http.postBuffer 1048576000 \
+    && \
+    export GIT_SSL_NO_VERIFY=true \
+    ; \
   fi
-
-RUN $APT update
-
-RUN $APT install -y --reinstall software-properties-common
-
-RUN $APT install -y gnupg2 wget
-
-RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key --no-check-certificate | apt-key add -
-
+  
 # See `How to add an Ubuntu apt-get key from behind a firewall`
 # + http://redcrackle.com/blog/how-add-ubuntu-apt-get-key-behind-firewall
 
 # NOTE: need to set at least empty http-proxy
-
-RUN apt-key adv --keyserver-options http-proxy=$http_proxy --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F
-
-RUN apt-key adv --keyserver-options http-proxy=$http_proxy --keyserver keyserver.ubuntu.com --recv-keys 94558F59
-
-RUN apt-key adv --keyserver-options http-proxy=$http_proxy --keyserver keyserver.ubuntu.com --recv-keys 2EA8F35793D8809A
 
 #RUN apt-key adv --keyserver-options http-proxy=$http_proxy --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 0xB01FA116
 
@@ -164,17 +196,6 @@ RUN apt-key adv --keyserver-options http-proxy=$http_proxy --keyserver keyserver
 # apt-key adv --list-public-keys --with-fingerprint --with-colons
 
 # RUN curl -sSL 'http://llvm.org/apt/llvm-snapshot.gpg.key' | apt-key add --keyserver-options http-proxy=$http_proxy -
-RUN apt-key adv --keyserver-options http-proxy=$http_proxy --fetch-keys http://llvm.org/apt/llvm-snapshot.gpg.key
-
-RUN apt-add-repository -y "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $(lsb_release -sc) main"
-
-RUN apt-add-repository -y "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main"
-
-RUN apt-add-repository -y "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main"
-
-RUN apt-add-repository -y "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main"
-
-RUN apt-add-repository -y "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-8 main"
 
 #RUN apt-add-repository -y "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe"
 
@@ -189,36 +210,6 @@ RUN apt-add-repository -y "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic
 
 #RUN apt-add-repository -y "ppa:ubuntu-toolchain-r/test"
 #RUN apt-add-repository -y "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $(lsb_release -sc) main"
-
-# update and install dependencies
-RUN         $APT update
-
-RUN         $APT install -y \
-                    ca-certificates \
-                    software-properties-common \
-                    git \
-                    wget \
-                    locales
-
-RUN if [ "$NO_SSL" = "True" ]; then \
-    git config --global http.sslVerify false\
-    && \
-    git config --global http.postBuffer 1048576000 \
-    && \
-    export GIT_SSL_NO_VERIFY=true \
-    ; \
-  fi
-
-RUN         $APT update
-
-RUN         $APT install -y \
-                    make \
-                    git \
-                    curl \
-                    vim \
-                    vim-gnome
-
-RUN         $APT install -y cmake
 
 RUN         $APT install -y \
                     build-essential \
