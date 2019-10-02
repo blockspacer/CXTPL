@@ -166,7 +166,7 @@ bash scripts/install_gflags.sh
 bash scripts/install_libunwind.sh
 ```
 - [folly](https://github.com/facebook/folly)
-[NOTE: we patched folly for clang support](https://github.com/facebook/folly/issues/976)
+NOTE: we patched folly for [clang support](https://github.com/facebook/folly/issues/976)
 ```
 bash scripts/install_folly.sh
 ```
