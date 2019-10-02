@@ -86,6 +86,7 @@ target_link_libraries(CXTPL_core PUBLIC
 )
 
 target_include_directories(CXTPL_core PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/submodules/boost.outcome/include/outcome/quickcpplib/include/ # TODO
   ${LIBIBERTY_INCLUDE_DIR} # used by folly
   ${G3LOG_INCLUDE_DIR} # used by folly
   ${LIBEVENT_INCLUDE_DIR} # used by folly
