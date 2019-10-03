@@ -497,6 +497,9 @@ Please note that this project is released with a [Code of Conduct](CODE_OF_CONDU
 
 ### Contributors List 👌
 
+### FarzanHosseini
+-  [![github-alt][github-img]](https://github.com/farzanhosseini)
+
 ### D
 
 #### Denis trofimov
