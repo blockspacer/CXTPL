@@ -11,7 +11,6 @@
 ![Open Source Love](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-pink.svg)
 ![First Timers Only](https://img.shields.io/badge/first--timers--only-friendly-blue.svg?style=flat)
 ![Up For Grabs](https://img.shields.io/badge/up--for--grabs-friendly-green.svg?style=flat)
-
 ![GitHub](https://img.shields.io/github/license/blockspacer/CXTPL.svg)
 ![GitHub forks](https://img.shields.io/github/forks/blockspacer/CXTPL.svg)
 ![GitHub issues](https://img.shields.io/github/issues/blockspacer/CXTPL.svg)
@@ -21,6 +20,12 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/blockspacer/CXTPL.svg)
 ![GitHub top language](https://img.shields.io/github/languages/top/blockspacer/CXTPL.svg)
 ![GitHub language count](https://img.shields.io/github/languages/count/blockspacer/CXTPL.svg)
+[![Project Status: WIP - Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](http://www.repostatus.org/badges/latest/wip.svg)](http://www.repostatus.org/#wip)
+[![license](https://img.shields.io/github/license/blockspacer/CXTPL.svg?style=flat-square)](https://github.com/blockspacer/CXTPL/master/LICENSE)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/bsamseth/cpp-project.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/blockspacer/CXTPL/alerts/)
+[![Lines of Code](https://tokei.rs/b1/github/blockspacer/CXTPL)](https://github.com/Aaronepower/tokei).
+[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/blockspacer/CXTPL.svg)](http://isitmaintained.com/project/blockspacer/CXTPL "Average time to resolve an issue")
+[![Percentage of issues still open](http://isitmaintained.com/badge/open/blockspacer/CXTPL.svg)](http://isitmaintained.com/project/blockspacer/CXTPL "Percentage of issues still open")
 
 # 📚 About CXTPL (C++ template engine)
 
