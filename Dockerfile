@@ -57,6 +57,8 @@ FROM        ubuntu:${UBUNTU_VERSION} as cxtpl_build_env
 # Set it via ARG as this only is available during build:
 ARG DEBIAN_FRONTEND=noninteractive
 
+ARG ENABLE_LLVM="True"
+
 ARG GIT_EMAIL="you@example.com"
 
 ARG GIT_USERNAME="Your Name"
@@ -226,14 +228,16 @@ RUN set -ex \
                     vim \
                     vim-gnome \
   && \
-  $APT install -y cmake \
+  $APT install -y cmake build-essential \
   && \
-  $APT install -y \
-                    build-essential \
+    if [ "$ENABLE_LLVM" = "True" ]; then \
+    $APT install -y \
                     clang-6.0 python-lldb-6.0 lldb-6.0 lld-6.0 llvm-6.0-dev \
                     clang-tools-6.0 libclang-common-6.0-dev libclang-6.0-dev \
                     libc++abi-dev libc++-dev libclang-common-6.0-dev libclang1-6.0 libclang-6.0-dev \
                     libstdc++6 libstdc++-6-dev \
+    ; \
+    fi \
   && \
   $APT install -y libboost-dev \
                     openmpi-bin \

@@ -338,7 +338,7 @@ CONAN_CACERT_PATH=/path/to/ca-bundle.crt
 file $CONAN_CACERT_PATH
 ```
 
-Usefull links:
+Useful links:
 
 - https://ncona.com/2019/04/dependency-management-in-cpp-with-conan/
 - https://blog.conan.io/2018/06/11/Transparent-CMake-Integration.html
