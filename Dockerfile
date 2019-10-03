@@ -51,9 +51,20 @@ FROM        ubuntu:18.04
 # ./build/<app>
 
 # https://askubuntu.com/a/1013396
+# https://github.com/phusion/baseimage-docker/issues/319
 # RUN export DEBIAN_FRONTEND=noninteractive
 # Set it via ARG as this only is available during build:
 ARG DEBIAN_FRONTEND=noninteractive
+
+ENV LC_ALL C.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+#ENV TERM screen
+
+ENV PATH=/usr/lib/clang/6.0/include:/usr/lib/llvm-6.0/include/:$PATH
+
+ARG APT="DEBIAN_FRONTEND=noninteractive apt-get -qq --no-install-recommends"
+
 # docker build --build-arg NO_SSL="False" APT="apt-get -qq --no-install-recommends" .
 ARG NO_SSL="True"
 ARG APT="apt-get -qq --no-install-recommends"
@@ -128,7 +139,7 @@ RUN set -ex \
   && \
   apt-key adv --keyserver-options http-proxy=$http_proxy --fetch-keys http://llvm.org/apt/llvm-snapshot.gpg.key \
   && \
-  apt-add-repository -y "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $(lsb_release -sc) main" \ 
+  apt-add-repository -y "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $(lsb_release -sc) main" \
   && \
   apt-add-repository -y "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main" \
   && \
@@ -153,7 +164,7 @@ RUN set -ex \
                     curl \
                     vim \
                     vim-gnome \
-                    cmake 
+                    cmake
   && \
   if "$NO_SSL" = "True" ]; then \
     git config --global http.sslVerify false\
@@ -163,11 +174,27 @@ RUN set -ex \
     export GIT_SSL_NO_VERIFY=true \
     ; \
   fi
-  
+
 # See `How to add an Ubuntu apt-get key from behind a firewall`
 # + http://redcrackle.com/blog/how-add-ubuntu-apt-get-key-behind-firewall
 
 # NOTE: need to set at least empty http-proxy
+# https://github.com/EtiennePerot/parcimonie.sh/issues/15
+RUN if [ ! -z "$http_proxy" ]; then \
+    apt-key adv --keyserver-options http-proxy=$http_proxy --keyserver keyserver.ubuntu.com --recv-keys 94558F59 \
+    && \
+    apt-key adv --keyserver-options http-proxy=$http_proxy --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F \
+    && \
+    apt-key adv --keyserver-options http-proxy=$http_proxy --keyserver keyserver.ubuntu.com --recv-keys 2EA8F35793D8809A \
+    ; \
+  else \
+    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 94558F59 \
+    && \
+    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 1E9377A2BA9EF27F \
+    && \
+    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 2EA8F35793D8809A \
+    ; \
+  fi
 
 #RUN apt-key adv --keyserver-options http-proxy=$http_proxy --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 0xB01FA116
 
@@ -490,6 +517,8 @@ RUN         $APT remove -y \
 RUN echo ClientAliveInterval 60 >> /etc/ssh/sshd_config
 
 #RUN service ssh restart
+
+#ENV DEBIAN_FRONTEND teletype
 
 CMD ["bash"]
 
