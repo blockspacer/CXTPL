@@ -23,7 +23,7 @@
 #include <boost/program_options.hpp>
 #include <boost/utility/in_place_factory.hpp>
 
-#include <folly/io/async/ScopedEventBaseThread.h>
+//#include <folly/io/async/ScopedEventBaseThread.h>
 #include <folly/executors/CPUThreadPoolExecutor.h>
 #include <folly/executors/GlobalExecutor.h>
 #include <folly/Executor.h>
@@ -66,11 +66,11 @@
 #include <folly/ScopeGuard.h>
 #include <folly/hash/SpookyHashV2.h>
 #include <folly/json.h>
-#include <folly/experimental/TimerFDTimeoutManager.h>
-#include <folly/experimental/STTimerFDTimeoutManager.h>
+//#include <folly/experimental/TimerFDTimeoutManager.h>
+//#include <folly/experimental/STTimerFDTimeoutManager.h>
 #include <folly/io/async/test/Util.h>
-#include <folly/experimental/STTimerFDTimeoutManager.h>
-#include <folly/experimental/TimerFDTimeoutManager.h>
+//#include <folly/experimental/STTimerFDTimeoutManager.h>
+//#include <folly/experimental/TimerFDTimeoutManager.h>
 #include <folly/io/async/test/UndelayedDestruction.h>
 #include <folly/executors/TimedDrivableExecutor.h>
 #include <folly/Conv.h>
@@ -589,7 +589,7 @@ static void run_generation() {
     }
 
 
-    typedef folly::UndelayedDestruction<folly::HHWheelTimerHighRes> StackWheelTimerUs;
+    //typedef folly::UndelayedDestruction<folly::HHWheelTimerHighRes> StackWheelTimerUs;
 
     XLOG(DBG4) << "Added task for " << *it_path;
 
