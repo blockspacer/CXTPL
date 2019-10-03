@@ -1,7 +1,7 @@
 ﻿&nbsp;
 <p align="center">
-  <a href="https://CXXCTP.github.io">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Cpp-Francophonie.svg/512px-Cpp-Francophonie.svg.png" width="100px" alt="CXXCTP" />
+  <a href="https://cxtpl.github.io">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Cpp-Francophonie.svg/512px-Cpp-Francophonie.svg.png" width="100px" alt="cxtpl" />
   </a>
 </p>
 <h3 align="center">C++ Template engine</h3>
@@ -12,15 +12,15 @@
 ![First Timers Only](https://img.shields.io/badge/first--timers--only-friendly-blue.svg?style=flat)
 ![Up For Grabs](https://img.shields.io/badge/up--for--grabs-friendly-green.svg?style=flat)
 
-![GitHub](https://img.shields.io/github/license/blockspacer/CXXCTP.svg)
-![GitHub forks](https://img.shields.io/github/forks/blockspacer/CXXCTP.svg)
-![GitHub issues](https://img.shields.io/github/issues/blockspacer/CXXCTP.svg)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/blockspacer/CXXCTP.svg)
-![GitHub contributors](https://img.shields.io/github/contributors/blockspacer/CXXCTP.svg)
-![GitHub commit activity the past week, 4 weeks, year](https://img.shields.io/github/commit-activity/w/blockspacer/CXXCTP.svg)
-![GitHub last commit](https://img.shields.io/github/last-commit/blockspacer/CXXCTP.svg)
-![GitHub top language](https://img.shields.io/github/languages/top/blockspacer/CXXCTP.svg)
-![GitHub language count](https://img.shields.io/github/languages/count/blockspacer/CXXCTP.svg)
+![GitHub](https://img.shields.io/github/license/blockspacer/CXTPL.svg)
+![GitHub forks](https://img.shields.io/github/forks/blockspacer/CXTPL.svg)
+![GitHub issues](https://img.shields.io/github/issues/blockspacer/CXTPL.svg)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/blockspacer/CXTPL.svg)
+![GitHub contributors](https://img.shields.io/github/contributors/blockspacer/CXTPL.svg)
+![GitHub commit activity the past week, 4 weeks, year](https://img.shields.io/github/commit-activity/w/blockspacer/CXTPL.svg)
+![GitHub last commit](https://img.shields.io/github/last-commit/blockspacer/CXTPL.svg)
+![GitHub top language](https://img.shields.io/github/languages/top/blockspacer/CXTPL.svg)
+![GitHub language count](https://img.shields.io/github/languages/count/blockspacer/CXTPL.svg)
 
 # 📚 About CXTPL (C++ template engine)
 
@@ -133,6 +133,49 @@ git submodule update --init --recursive --depth 5
 git submodule update --force --recursive --init --remote
 ```
 
+## Install & use under Docker
+
+Install and configure Docker https://medium.com/@saniaky/configure-docker-to-use-a-host-proxy-e88bd988c0aa
+
+Clone code (as above) and `cd` into cloned dir.
+
+NOTE: You may want to build Docker image with `--build-arg NO_SSL="False"`. Read comments in Dockerfile.
+
+```bash
+# Give docker the rights to access X-server
+sudo -E xhost +local:docker
+
+# build Dockerfile
+sudo -E docker build --no-cache -t cpp-docker-cxtpl .
+
+# Now let’s check if our image has been created.
+sudo -E docker images
+
+# Run in container without leaving host terminal
+sudo -E docker run -v "$PWD":/home/u/cxtpl -w /home/u/cxtpl cpp-docker-cxtpl CXTPL_tool -version --version
+
+# Run a terminal in container
+sudo -E docker run --rm -v "$PWD":/home/u/cxtpl -w /home/u/cxtpl  -it  -e DISPLAY         -v /tmp/.X11-unix:/tmp/.X11-unix  cpp-docker-cxtpl
+
+# type in container terminal
+CXTPL_tool -version --version
+```
+
+## Develop under Docker
+
+```bash
+# Run a terminal in container
+sudo -E docker run --rm -v "$PWD":/home/u/cxtpl -w /home/u/cxtpl  -it  -e DISPLAY         -v /tmp/.X11-unix:/tmp/.X11-unix  cpp-docker-cxtpl
+
+# An example of how to build (with Makefile generated from cmake) inside the container
+# Mounts $PWD to /home/u/cxtpl and runs command
+mkdir build
+sudo -E docker run --rm -v "$PWD":/home/u/cxtpl -w /home/u/cxtpl/build cpp-docker-cxtpl cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+
+# Run resulting app in host OS:
+# ./build/<app>
+```
+
 ## DEPENDENCIES
 
 - [Boost](https://www.boost.org/)
@@ -207,6 +250,86 @@ NOTE: we patched folly for clang support https://github.com/facebook/folly/issue
 bash scripts/install_folly.sh
 ```
 
+## Install conan - a crossplatform dependency manager for C++
+
+```bash
+pip install conan
+conan remote list
+conan search *boost* -r all
+```
+
+Configure Proxies & cacert_path in `~/.conan/conan.conf`, see https://docs.conan.io/en/latest/reference/config_files/conan.conf.html#proxies
+
+Configure conan clang profile to then use --profile clang:
+
+```bash
+/usr/bin/clang-6.0 -v
+/usr/bin/clang++-6.0 -v
+
+nano ~/.conan/profiles/clang
+
+[settings]
+# We are building in Ubuntu Linux
+os_build=Linux
+os=Linux
+arch_build=x86_64
+arch=x86_64
+
+compiler=clang
+compiler.version=6.0
+compiler.libcxx=libstdc++11
+
+[env]
+CC=/usr/bin/clang
+CXX=/usr/bin/clang++
+```
+
+And then `conan install ***** --profile clang`
+
+```bash
+/usr/bin/gcc -v
+/usr/bin/g++ -v
+
+nano ~/.conan/profiles/gcc
+
+[settings]
+# We are building in Ubuntu Linux
+os_build=Linux
+os=Linux
+arch_build=x86_64
+arch=x86_64
+
+compiler=gcc
+compiler.version=7
+compiler.libcxx=libstdc++11
+
+[env]
+CC=/usr/bin/gcc
+CXX=/usr/bin/g++
+```
+
+If you want to disable ssl (under proxy, e.t.c.):
+
+```bash
+# see https://docs.conan.io/en/latest/reference/commands/misc/remote.html#conan-remote
+conan remote update conan-center https://conan.bintray.com False
+```
+
+If you want to set corp. cacert:
+
+```bash
+CONAN_CACERT_PATH=/path/to/ca-bundle.crt
+file $CONAN_CACERT_PATH
+```
+
+Usefull links:
+
+- https://ncona.com/2019/04/dependency-management-in-cpp-with-conan/
+- https://blog.conan.io/2018/06/11/Transparent-CMake-Integration.html
+- Conan https://blog.conan.io/2018/06/11/Transparent-CMake-Integration.html https://blog.conan.io/2018/12/03/Using-Facebook-Folly-with-Conan.html
+- CONAN_PKG::cppzmq https://github.com/chaplin89/prontocpp/blob/master/CMakeLists.txt#L42
+- https://github.com/conan-io/examples
+
 ## How to build
 
 ```bash
@@ -222,6 +345,7 @@ cmake -E make_directory build
 ```
 
 ```bash
+cmake -E chdir build conan install --build=missing --profile gcc ..
 # configure
 cmake -E chdir build cmake -E time cmake -DBUILD_EXAMPLES=FALSE -DENABLE_CLING=FALSE -DCMAKE_BUILD_TYPE=Debug ..
 # build

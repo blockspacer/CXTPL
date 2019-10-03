@@ -11,6 +11,13 @@ project(
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/build/") # for conan
+
+# Setup conan and include everything.
+#include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+#conan_basic_setup()
+include(conanbuildinfo)
+conan_basic_setup(TARGETS)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -26,6 +33,8 @@ option(USE_FOLLY "Use facebook/folly library (Apache License 2.0)" ON)
 option(USE_RANG "Use RANG for coloring terminal" OFF)
 
 option(BUILD_EXAMPLES "Use built-in examples" OFF)
+
+option(ENABLE_TESTS "Use unit tests" ON)
 
 set( USED_SYSTEM_LIBS
   Threads::Threads # pthread, https://cmake.org/cmake/help/v3.13/module/FindThreads.html
@@ -83,6 +92,8 @@ target_link_libraries(CXTPL_core PUBLIC
   ${USED_BOOST_LIBS}
   boost_outcome
   microsoft_gsl
+  #${CONAN_LIBS}
+  #CONAN_PKG::catch2
 )
 
 target_include_directories(CXTPL_core PUBLIC
@@ -129,6 +140,12 @@ set_target_properties(CXTPL_core
 install(TARGETS CXTPL_core DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
 
 add_subdirectory(tool)
+
+if(ENABLE_TESTS)
+  # Now enable our tests.
+  enable_testing()
+  add_subdirectory(tests)
+endif(ENABLE_TESTS)
 
 if(BUILD_EXAMPLES)
   add_subdirectory(examples)
