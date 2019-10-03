@@ -34,7 +34,7 @@ option(USE_RANG "Use RANG for coloring terminal" OFF)
 
 option(BUILD_EXAMPLES "Use built-in examples" OFF)
 
-option(ENABLE_TESTS "Use unit tests" ON)
+option(ENABLE_TESTS "Use unit tests" OFF)
 
 set( USED_SYSTEM_LIBS
   Threads::Threads # pthread, https://cmake.org/cmake/help/v3.13/module/FindThreads.html
@@ -98,6 +98,7 @@ target_link_libraries(CXTPL_core PUBLIC
 
 target_include_directories(CXTPL_core PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/submodules/boost.outcome/include/outcome/quickcpplib/include/ # TODO
+  ${CMAKE_CURRENT_SOURCE_DIR}/submodules/folly # TODO
   ${LIBIBERTY_INCLUDE_DIR} # used by folly
   ${G3LOG_INCLUDE_DIR} # used by folly
   ${LIBEVENT_INCLUDE_DIR} # used by folly

@@ -253,8 +253,19 @@ bash scripts/install_folly.sh
 ## Install conan - a crossplatform dependency manager for C++
 
 ```bash
-pip install conan
+pip install --index-url=https://pypi.python.org/simple/ --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org wheel \
+  && \
+  pip install --index-url=https://pypi.python.org/simple/ --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org virtualenv \
+  && \
+  pip install --index-url=https://pypi.python.org/simple/ --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org conan \
+  && \
+  pip install --index-url=https://pypi.python.org/simple/ --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org conan_package_tools
+
+conan profile new default --detect
+# conan profile update settings.compiler.libcxx=libstdc++11 default
+
 conan remote list
+
 conan search *boost* -r all
 ```
 
@@ -308,11 +319,16 @@ CC=/usr/bin/gcc
 CXX=/usr/bin/g++
 ```
 
-If you want to disable ssl (under proxy, e.t.c.):
+If you want to disable ssl (under proxy, etc.):
 
 ```bash
 # see https://docs.conan.io/en/latest/reference/commands/misc/remote.html#conan-remote
 conan remote update conan-center https://conan.bintray.com False
+conan search boost* -r=conan-center
+
+conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+conan remote update bincrafters https://api.bintray.com/conan/bincrafters/public-conan False
+conan search boost* -r=bincrafters
 ```
 
 If you want to set corp. cacert:
@@ -345,7 +361,7 @@ cmake -E make_directory build
 ```
 
 ```bash
-cmake -E chdir build conan install --build=missing --profile gcc ..
+cmake -E chdir build conan install --build=missing --profile gcc -o enable_tests=False ..
 # configure
 cmake -E chdir build cmake -E time cmake -DBUILD_EXAMPLES=FALSE -DENABLE_CLING=FALSE -DCMAKE_BUILD_TYPE=Debug ..
 # build

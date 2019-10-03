@@ -7,7 +7,8 @@
 # + https://stackoverflow.com/a/38901128
 # + https://dev.to/shriharshmishra/behind-the-corporate-proxy-2jd8
 # + https://stackoverflow.com/a/38901128
-FROM        ubuntu:18.04
+ARG UBUNTU_VERSION=18.04
+FROM        ubuntu:${UBUNTU_VERSION} as cxtpl_build_env
 
 # Give docker the rights to access X-server
 # sudo -E xhost +local:docker
@@ -56,16 +57,27 @@ FROM        ubuntu:18.04
 # Set it via ARG as this only is available during build:
 ARG DEBIAN_FRONTEND=noninteractive
 
+ARG GIT_EMAIL="you@example.com"
+
+ARG GIT_USERNAME="Your Name"
+
 ENV LC_ALL=C.UTF-8 \
     LANG=en_US.UTF-8 \
     LANGUAGE=en_US:en \
     #TERM=screen \
-    PATH=/usr/lib/clang/6.0/include:/usr/lib/llvm-6.0/include/:$PATH
+    PATH=/usr/lib/clang/6.0/include:/usr/lib/llvm-6.0/include/:$PATH \
+    GIT_AUTHOR_NAME=$GIT_USERNAME \
+    GIT_AUTHOR_EMAIL=$GIT_EMAIL \
+    GIT_COMMITTER_NAME=$GIT_USERNAME \
+    GIT_COMMITTER_EMAIL=$GIT_EMAIL
 
 ARG APT="apt-get -qq --no-install-recommends"
 
 # docker build --build-arg NO_SSL="False" APT="apt-get -qq --no-install-recommends" .
 ARG NO_SSL="True"
+
+# TODO
+# better dev-env https://github.com/aya/infra/blob/318b16621c7f6d3cd33cfd481f46eed5d750b6aa/stack/ide/docker/ide/Dockerfile
 
 # https://www.peterbe.com/plog/set-ex
 # RUN set -ex
@@ -171,6 +183,28 @@ RUN set -ex \
                     git \
                     wget \
                     locales
+
+# TODO
+#RUN set -ex \
+#    && for key in \
+#    4ED778F539E3634C779C87C6D7062848A1AB005C \
+#    B9E2F5981AA6E0CD28160D9FF13993A75599653C \
+#    94AE36675C464D64BAFA68DD7434390BDBE9B9C5 \
+#    B9AE9905FFD7803F25714661B63B535A4C206CA9 \
+#    77984A986EBC2AA786BC0F66B01FBB92821C587A \
+#    71DCFD284A79C3B38668286BC97EC7A07EDE3FC1 \
+#    FD3A5288F042B6850C66B31F09FE44734EB7990E \
+#    8FCCA13FEF1D0C2E91008E09770F7A9A5AE15600 \
+#    C4F0DFFF4E8C1A8236409D08E73BC641CC11F4C8 \
+#    DD8F2338BAE7501E3DD5AC78C273792F7D83545D \
+#    A48C2BEE680E841632CD4E44F07496B3EB3C1762 \
+#    ; do \
+#    gpg --batch --keyserver ipv4.pool.sks-keyservers.net --recv-keys "$key" || \
+#    gpg --batch --keyserver pool.sks-keyservers.net --recv-keys "$key" || \
+#    gpg --batch --keyserver pgp.mit.edu --recv-keys "$key" || \
+#    gpg --batch --keyserver keyserver.pgp.com --recv-keys "$key" || \
+#    gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key" ; \
+#    done
 
 RUN set -ex \
   && \
@@ -359,6 +393,62 @@ RUN pip3 install --index-url=https://pypi.python.org/simple/ --trusted-host pypi
   && \
   pip3 install --index-url=https://pypi.python.org/simple/ --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org conan_package_tools
 
+RUN conan remote update conan-center https://conan.bintray.com False
+
+# TODO: use conan profile new https://github.com/conan-io/conan/issues/1541#issuecomment-321235829
+RUN mkdir -p $HOME/.conan/profiles/ \
+  && \
+  echo "[settings]" >> ~/.conan/profiles/clang \
+  && \
+  echo "os_build=Linux" >> ~/.conan/profiles/clang \
+  && \
+  echo "os=Linux" >> ~/.conan/profiles/clang \
+  && \
+  echo "arch_build=x86_64" >> ~/.conan/profiles/clang \
+  && \
+  echo "arch=x86_64" >> ~/.conan/profiles/clang \
+  && \
+  echo "compiler=clang" >> ~/.conan/profiles/clang \
+  && \
+  echo "compiler.version=6.0" >> ~/.conan/profiles/clang \
+  && \
+  echo "compiler.libcxx=libstdc++11" >> ~/.conan/profiles/clang \
+  && \
+  echo "" >> ~/.conan/profiles/clang \
+  && \
+  echo "[env]" >> ~/.conan/profiles/clang \
+  && \
+  echo "CC=/usr/bin/clang" >> ~/.conan/profiles/clang \
+  && \
+  echo "CXX=/usr/bin/clang++" >> ~/.conan/profiles/clang
+
+# TODO: use conan profile new https://github.com/conan-io/conan/issues/1541#issuecomment-321235829
+RUN mkdir -p $HOME/.conan/profiles/ \
+  && \
+  echo "[settings]" >> ~/.conan/profiles/gcc \
+  && \
+  echo "os_build=Linux" >> ~/.conan/profiles/gcc \
+  && \
+  echo "os=Linux" >> ~/.conan/profiles/gcc \
+  && \
+  echo "arch_build=x86_64" >> ~/.conan/profiles/gcc \
+  && \
+  echo "arch=x86_64" >> ~/.conan/profiles/gcc \
+  && \
+  echo "compiler=gcc" >> ~/.conan/profiles/gcc \
+  && \
+  echo "compiler.version=7" >> ~/.conan/profiles/gcc \
+  && \
+  echo "compiler.libcxx=libstdc++11" >> ~/.conan/profiles/gcc \
+  && \
+  echo "" >> ~/.conan/profiles/gcc \
+  && \
+  echo "[env]" >> ~/.conan/profiles/gcc \
+  && \
+  echo "CC=/usr/bin/gcc" >> ~/.conan/profiles/gcc \
+  && \
+  echo "CXX=/usr/bin/g++" >> ~/.conan/profiles/gcc
+
 WORKDIR /opt
 
 # libunwind
@@ -417,6 +507,9 @@ WORKDIR /opt
 # RUN make
 # RUN make install
 
+# allows individual sections to be run by doing: docker build --target cxtpl_tool ...
+FROM        cxtpl_build_env as cxtpl_tool
+
 # NOTE: create folder `.ca-certificates` with custom certs
 # switch to root
 #USER root
@@ -427,16 +520,17 @@ RUN update-ca-certificates --fresh
 
 WORKDIR /opt/
 
-COPY . /opt/cxtpl
+# NOTE: ADD invalidate the cache for the copy
+ADD . /opt/cxtpl
 
 # RUN git clone --depth=1 --recurse-submodules --single-branch --branch=master https://github.com/blockspacer/cxtpl.git
 
 WORKDIR /opt/cxtpl
 
 # need some git config to apply git patch
-RUN git config --global user.email "you@example.com"\
+RUN git config --global user.email "$GIT_EMAIL" \
   && \
-  git config --global user.name "Your Name"
+  git config --global user.name "$GIT_USERNAME"
 
 # TODO https://stackoverflow.com/a/40465312
 # RUN git submodule deinit -f . || true
@@ -457,26 +551,26 @@ WORKDIR /opt/cxtpl
 # CMake
 #RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_cmake.sh"]
 #RUN /bin/bash -c "source /opt/cxtpl/scripts/install_cmake.sh"
-RUN cmake --version
+#RUN cmake --version
 
 # g3log
 RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_g3log.sh"] \
   && \
-  /bin/bash -c "source /opt/cxtpl/scripts/install_g3log.sh"
-
-# gtest
-RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_gtest.sh"] \
+  /bin/bash -c "source /opt/cxtpl/scripts/install_g3log.sh" \
   && \
-  /bin/bash -c "source /opt/cxtpl/scripts/install_gtest.sh"
-
-# gflags
-RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_gflags.sh"] \
+  # gtest \
+  ["chmod", "+x", "/opt/cxtpl/scripts/install_gtest.sh"] \
   && \
-  /bin/bash -c "source /opt/cxtpl/scripts/install_gflags.sh"
-
-# folly
-# NOTE: we patched folly for clang support https://github.com/facebook/folly/issues/976
-RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_folly.sh"] \
+  /bin/bash -c "source /opt/cxtpl/scripts/install_gtest.sh" \
+  && \
+  # gflags \
+  ["chmod", "+x", "/opt/cxtpl/scripts/install_gflags.sh"] \
+  && \
+  /bin/bash -c "source /opt/cxtpl/scripts/install_gflags.sh" \
+  && \
+  # folly \
+  # NOTE: we patched folly for clang support https://github.com/facebook/folly/issues/976 \
+  ["chmod", "+x", "/opt/cxtpl/scripts/install_folly.sh"] \
   && \
   /bin/bash -c "source /opt/cxtpl/scripts/install_folly.sh"
 
@@ -516,6 +610,9 @@ RUN echo ClientAliveInterval 60 >> /etc/ssh/sshd_config
 #RUN service ssh restart
 
 #ENV DEBIAN_FRONTEND teletype
+
+# default
+FROM        cxtpl_tool
 
 CMD ["bash"]
 

@@ -3,8 +3,7 @@ import traceback
 import os
 import shutil
 
-# Just replace `MySimpleProject` with your name
-class MySimpleProject(ConanFile):
+class CXTPLProject(ConanFile):
     name = "CXTPL"
 
     # Indicates License type of the packaged library
@@ -13,19 +12,113 @@ class MySimpleProject(ConanFile):
     version = "master"
     url = "https://github.com/blockspacer/CXTPL"
     description = "C++ template engine."
+    topics = ('c++')
+
+    options = {
+        "use_system_boost": [True, False],
+        "enable_tests": [True, False],
+        "enable_sanitizers": [True, False]
+    }
+
+    default_options = (
+        "use_system_boost=True",
+        "enable_tests=False",
+        "enable_sanitizers=False",
+        # boost
+        "boost:without_atomic=True",
+        "boost:without_chrono=True",
+        "boost:without_container=True",
+        "boost:without_context=True",
+        "boost:without_coroutine=True",
+        "boost:without_graph=True",
+        "boost:without_graph_parallel=True",
+        "boost:without_log=True",
+        "boost:without_math=True",
+        "boost:without_mpi=True",
+        "boost:without_serialization=True",
+        "boost:without_signals=True",
+        "boost:without_test=True",
+        "boost:without_timer=True",
+        "boost:without_type_erasure=True",
+        "boost:without_wave=True",
+        # FakeIt
+        "FakeIt:integration=catch",
+        # build
+        "*:shared=False"
+    )
+
+    generators = 'cmake_find_package', "cmake", "cmake_paths"
+
+    #default_options = \
+    #    "boost:without_atomic=True", \
+    #    "boost:without_chrono=True", \
+    #    "boost:without_container=True", \
+    #    "boost:without_context=True", \
+    #    "boost:without_coroutine=True", \
+    #    "boost:without_graph=True", \
+    #    "boost:without_graph_parallel=True", \
+    #    "boost:without_log=True", \
+    #    "boost:without_math=True", \
+    #    "boost:without_mpi=True", \
+    #    "boost:without_serialization=True", \
+    #    "boost:without_signals=True", \
+    #    "boost:without_test=True", \
+    #    "boost:without_timer=True", \
+    #    "boost:without_type_erasure=True", \
+    #    "boost:without_wave=True", \
+    #    "FakeIt:integration=catch", \
+    #    "*:shared=False"
 
     # Packages the license for the conanfile.py
-    exports = ["LICENSE.md"]
+    #exports = ["LICENSE.md"]
+    exports_sources = ("LICENSE", "README.md", "include/*", "src/*",
+                       "cmake/*", "CMakeLists.txt", "tests/*", "benchmarks/*",
+                       "scripts/*")
 
     settings = "os", "compiler", "build_type", "arch"
 
     # Use version ranges for dependencies unless there's a reason not to
-    requires = (
+#    requires = (
 #        "fmt/[>=4.1.0]@bincrafters/stable",
 #        "spdlog/[>=0.14.0]@bincrafters/stable",
-        "FakeIt/[>=2.0.4]@gasuketsu/stable",
-        "catch2/[>=2.1.0]@bincrafters/stable"
-    )
+#        "gtest/[>=1.8.0]@conan/stable",
+#        "FakeIt/[>=2.0.4]@gasuketsu/stable",
+#        "catch2/[>=2.1.0]@bincrafters/stable"
+#    )
+
+    def requirements(self):
+        if self.options.enable_tests:
+            self.requires("catch2/[>=2.1.0]@bincrafters/stable")
+            self.requires("gtest/[>=1.8.0]@bincrafters/stable")
+            self.requires("FakeIt/[>=2.0.4]@gasuketsu/stable")
+
+        if not self.options.use_system_boost:
+            self.requires("boost/[>=1.66.0]@conan/stable")
+
+    def package(self):
+        cmake = CMake(self)
+        cmake.install()
+
+    def build(self):
+        cmake = CMake(self)
+        if self.settings.compiler == 'gcc':
+            cmake.definitions["CMAKE_C_COMPILER"] = "gcc-{}".format(
+                self.settings.compiler.version)
+            cmake.definitions["CMAKE_CXX_COMPILER"] = "g++-{}".format(
+                self.settings.compiler.version)
+
+        cmake.definitions["ENABLE_SANITIZERS"] = 'ON'
+        if not self.options.enable_sanitizers:
+            cmake.definitions["ENABLE_SANITIZERS"] = 'OFF'
+
+        cmake.definitions["ENABLE_TESTS"] = 'ON'
+        if not self.options.enable_tests:
+            cmake.definitions["ENABLE_TESTS"] = 'OFF'
+
+        cmake.definitions["CMAKE_TOOLCHAIN_FILE"] = 'conan_paths.cmake'
+        cmake.configure()
+        cmake.build()
+        cmake.test()
 
 #    requires = \
 #        "boost/1.68.0@conan/stable", \
@@ -42,26 +135,6 @@ class MySimpleProject(ConanFile):
 #        "bzip2/1.0.6@conan/stable", \
 #        "yaml-cpp/0.6.2@tmadden/stable", \
 #        "spdlog/0.16.3@bincrafters/stable"
-    generators = "cmake"
-    default_options = \
-        "boost:without_atomic=True", \
-        "boost:without_chrono=True", \
-        "boost:without_container=True", \
-        "boost:without_context=True", \
-        "boost:without_coroutine=True", \
-        "boost:without_graph=True", \
-        "boost:without_graph_parallel=True", \
-        "boost:without_log=True", \
-        "boost:without_math=True", \
-        "boost:without_mpi=True", \
-        "boost:without_serialization=True", \
-        "boost:without_signals=True", \
-        "boost:without_test=True", \
-        "boost:without_timer=True", \
-        "boost:without_type_erasure=True", \
-        "boost:without_wave=True", \
-        "FakeIt:integration=catch", \
-        "*:shared=False"
 
 #       self.requires("streamvbyte/master@elshize/testing")
 #        self.requires("gumbo-parser/1.0@elshize/stable")
@@ -89,12 +162,6 @@ class MySimpleProject(ConanFile):
 # see https://github.com/elshize/irkit/blob/master/conanfile.py
 # see https://gitlab.kitware.com/ifmfr/glew/commit/25bc79f2b9f60c43cdedd91a738f087954c4228f
 # see https://github.com/jgsogo/conan-spdlog_setup/blob/359e6978fbd698a13c17b46e44bdbae107fa7f3f/conanfile.py
-
-#    def build(self):
-#        cmake = CMake(self, generator='Ninja')
-#        cmake.configure()
-#        cmake.build()
-#        cmake.test()
 #
 #    def imports(self):
 #        dest = os.getenv("CONAN_IMPORT_PATH", "bin")
