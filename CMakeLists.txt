@@ -129,6 +129,7 @@ set_property(TARGET CXTPL_core PROPERTY POSITION_INDEPENDENT_CODE ON)
 #)
 
 target_compile_definitions( CXTPL_core PUBLIC
+  FOLLY_NO_CONFIG=1 # we don't build a folly/folly-config.h
   GOOGLE_GLOG_DLL_DECL=
   # https://stackoverflow.com/a/30877725
   #BOOST_SYSTEM_NO_DEPRECATED

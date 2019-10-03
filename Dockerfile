@@ -28,7 +28,7 @@ FROM        ubuntu:${UBUNTU_VERSION} as cxtpl_build_env
 # OR
 # --network=host. This will make the build command use the network settings of the host.
 
-# Now letâ€™s check if our image has been created.
+# Now let's check if our image has been created.
 # sudo -E docker images
 
 # Run a terminal in container
@@ -67,7 +67,7 @@ ENV LC_ALL=C.UTF-8 \
     LANG=en_US.UTF-8 \
     LANGUAGE=en_US:en \
     #TERM=screen \
-    PATH=/usr/lib/clang/6.0/include:/usr/lib/llvm-6.0/include/:$PATH \
+    PATH=/usr/local/bin/:/usr/lib/clang/6.0/include:/usr/lib/llvm-6.0/include/:$PATH \
     GIT_AUTHOR_NAME=$GIT_USERNAME \
     GIT_AUTHOR_EMAIL=$GIT_EMAIL \
     GIT_COMMITTER_NAME=$GIT_USERNAME \
@@ -228,7 +228,7 @@ RUN set -ex \
                     vim \
                     vim-gnome \
   && \
-  $APT install -y cmake build-essential \
+  $APT install -y build-essential \
   && \
     if [ "$ENABLE_LLVM" = "True" ]; then \
     $APT install -y \
@@ -552,48 +552,51 @@ RUN ls -artl /opt/cxtpl/ \
 
 WORKDIR /opt/cxtpl
 
-# CMake
-#RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_cmake.sh"]
-#RUN /bin/bash -c "source /opt/cxtpl/scripts/install_cmake.sh"
-#RUN cmake --version
+RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_cmake.sh"]
+RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_g3log.sh"]
+RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_gtest.sh"]
+RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_gflags.sh"]
+RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_folly.sh"]
 
-# g3log
-RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_g3log.sh"] \
+# Uninstall the default version provided by Ubuntu’s package manager, so we can install custom one
+RUN set -ex \
+  && \
+  $APT purge -y cmake || true
+
+RUN set -ex \
+  && \
+  /bin/bash -c "source /opt/cxtpl/scripts/install_cmake.sh" \
   && \
   /bin/bash -c "source /opt/cxtpl/scripts/install_g3log.sh" \
   && \
   # gtest \
-  ["chmod", "+x", "/opt/cxtpl/scripts/install_gtest.sh"] \
-  && \
   /bin/bash -c "source /opt/cxtpl/scripts/install_gtest.sh" \
   && \
   # gflags \
-  ["chmod", "+x", "/opt/cxtpl/scripts/install_gflags.sh"] \
-  && \
   /bin/bash -c "source /opt/cxtpl/scripts/install_gflags.sh" \
   && \
   # folly \
   # NOTE: we patched folly for clang support https://github.com/facebook/folly/issues/976 \
-  ["chmod", "+x", "/opt/cxtpl/scripts/install_folly.sh"] \
-  && \
   /bin/bash -c "source /opt/cxtpl/scripts/install_folly.sh"
 
-RUN export CC=gcc \
+RUN set -ex \
+  && \
+  export CC=gcc \
   && \
   export CXX=g++ \
+  && \
   # create build dir \
-  && \
   cmake -E make_directory build \
-  # configure \
   && \
+  # configure \
   cmake -E chdir build conan install --build=missing --profile gcc .. \
   && \
   cmake -E chdir build cmake -E time cmake -DBUILD_EXAMPLES=FALSE -DENABLE_CLING=FALSE -DCMAKE_BUILD_TYPE=Debug .. \
+  && \
   # build \
-  && \
   cmake -E chdir build cmake -E time cmake --build . -- -j6 \
-  # install lib and CXTPL_tool \
   && \
+  # install lib and CXTPL_tool \
   cmake -E chdir build make install
 
 WORKDIR /opt/cxtpl

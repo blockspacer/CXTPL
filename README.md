@@ -23,7 +23,7 @@
 [![Project Status: WIP - Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](http://www.repostatus.org/badges/latest/wip.svg)](http://www.repostatus.org/#wip)
 [![license](https://img.shields.io/github/license/blockspacer/CXTPL.svg?style=flat-square)](https://github.com/blockspacer/CXTPL/master/LICENSE)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/bsamseth/cpp-project.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/blockspacer/CXTPL/alerts/)
-[![Lines of Code](https://tokei.rs/b1/github/blockspacer/CXTPL)](https://github.com/Aaronepower/tokei).
+[![Lines of Code](https://tokei.rs/b1/github/blockspacer/CXTPL)](https://github.com/blockspacer/CXTPL)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/blockspacer/CXTPL.svg)](http://isitmaintained.com/project/blockspacer/CXTPL "Average time to resolve an issue")
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/blockspacer/CXTPL.svg)](http://isitmaintained.com/project/blockspacer/CXTPL "Percentage of issues still open")
 
@@ -201,6 +201,7 @@ sudo apt-get install openmpi-bin openmpi-common libopenmpi-dev
 - CMake
 
 ```bash
+sudo -E apt-get purge -y cmake
 bash scripts/install_cmake.sh
 ```
 
