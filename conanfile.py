@@ -120,6 +120,14 @@ class CXTPLProject(ConanFile):
         cmake.build()
         cmake.test()
 
+    def imports(self):
+        dest = os.getenv("CONAN_IMPORT_PATH", "bin")
+        self.copy("*.dll", dst=dest, src="bin")
+        self.copy("*.so", dst=dest, src="bin")
+        self.copy("*.dylib*", dst=dest, src="lib")
+        self.copy("*.lib*", dst=dest, src="lib")
+        self.copy("*.a*", dst=dest, src="lib")
+
 #    requires = \
 #        "boost/1.68.0@conan/stable", \
 #        "catch/1.5.0@TyRoXx/stable", \
