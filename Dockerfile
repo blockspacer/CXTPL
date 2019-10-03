@@ -125,7 +125,7 @@ RUN set -ex \
   && \
   $APT install -y --reinstall software-properties-common \
   && \
-  $APT install -y gnupg2 wget
+  $APT install -y gnupg2 wget \
   && \
   wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key --no-check-certificate | apt-key add -
 
@@ -297,7 +297,7 @@ RUN set -ex \
 # ' >> $HOME/.config/pip/pip.conf
 
 # TODO https://github.com/moby/moby/issues/1799#issuecomment-489119778
-RUN mkdir -p $HOME/.pip/
+RUN mkdir -p $HOME/.pip/ \
   && \
   echo "[global]" >> $HOME/.pip/pip.conf \
   && \
@@ -481,16 +481,23 @@ RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_folly.sh"] \
   && \
   /bin/bash -c "source /opt/cxtpl/scripts/install_folly.sh"
 
-RUN export CC=gcc
-RUN export CXX=g++
-# create build dir
-RUN cmake -E make_directory build
-# configure
-RUN cmake -E chdir build cmake -E time cmake -DBUILD_EXAMPLES=FALSE -DENABLE_CLING=FALSE -DCMAKE_BUILD_TYPE=Debug ..
-# build
-RUN cmake -E chdir build cmake -E time cmake --build . -- -j6
-# install lib and CXTPL_tool
-RUN cmake -E chdir build make install
+RUN export CC=gcc \
+  && \
+  export CXX=g++ \
+  # create build dir \
+  && \
+  cmake -E make_directory build \
+  # configure \
+  && \
+  cmake -E chdir build conan install --build=missing --profile gcc .. \
+  && \
+  cmake -E chdir build cmake -E time cmake -DBUILD_EXAMPLES=FALSE -DENABLE_CLING=FALSE -DCMAKE_BUILD_TYPE=Debug .. \
+  # build \
+  && \
+  cmake -E chdir build cmake -E time cmake --build . -- -j6 \
+  # install lib and CXTPL_tool \
+  && \
+  cmake -E chdir build make install
 
 WORKDIR /opt/cxtpl
 
