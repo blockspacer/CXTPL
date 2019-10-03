@@ -531,6 +531,27 @@ Please note that this project is released with a [Code of Conduct](CODE_OF_CONDU
 - [![github-alt][github-img]](https://github.com/derofim)
 - [<img src="imgs/linkedin.svg" width="20" height="20">](https://www.linkedin.com/in/denis-trofimov-4335bb13b/)
 
+### CMake Code style
+
+CMake files pass style checks, can be fixed by running run-cmake-format.py from the root of the repository. This requires Python 3 and [cmake_format](https://github.com/cheshirekow/cmake_format) (note: this currently does not work on Windows)
+
+Use autoformatter `cmake-format.py` and `run-cmake-format.py`
+
+```bash
+pip3 install cmake_format
+python3 run-cmake-format.py
+```
+
+To use cmake-format on a specific CMakeLists.txt file in the command line run
+
+```bash
+python3 -m cmake_format -c cmake-format.py -i CMakeLists.txt
+```
+
+There is an official Visual Studio extension, details of which can be found [here](https://marketplace.visualstudio.com/items?itemName=cheshirekow.cmake-format).
+
+Follow CMake StyleGuide https://github.com/ruslo/0
+
 ## Similar projects
 
 - (compile-time) https://github.com/burner/sweet.hpp/tree/master/amber
