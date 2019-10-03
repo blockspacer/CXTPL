@@ -57,7 +57,7 @@ Again: Think about `.cxtpl` as lambda-function returning std::string. Prefer not
 
 Code generated from `.cxtpl` must create a variable with the name `cxtpl_output`, so the structure of your code is as shown below:
 
-```bash
+```cpp
 /// \Note that header is NOT generated, it includes stuff for other generated file
 #include "../../resources/cxtpl/typeclass_instance_gen_hpp.cxtpl.h"
 
@@ -87,7 +87,7 @@ You need to `#include` all headers used by template generator in your app code. 
 
 Example before template parsing/transpiling:
 
-```bash
+```cpp
 [[~ // parameters begin
 
 const std::string generator_path = "somepath";
@@ -106,7 +106,7 @@ std::vector<std::string> generator_includes{"someinclude"};
 
 Example after template parsing/transpiling:
 
-```bash
+```cpp
 // This is a generated file. Do not modify directly.
 // Path to the code generator: somepath.
 
