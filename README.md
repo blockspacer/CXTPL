@@ -175,7 +175,7 @@ sudo -E docker run --rm -v "$PWD":/home/u/cxtpl -w /home/u/cxtpl  -it  -e DISPLA
 # An example of how to build (with Makefile generated from cmake) inside the container
 # Mounts $PWD to /home/u/cxtpl and runs command
 mkdir build
-sudo -E docker run --rm -v "$PWD":/home/u/cxtpl -w /home/u/cxtpl/build cpp-docker-cxtpl cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+sudo -E docker run --rm -v "$PWD":/home/u/cxtpl -w /home/u/cxtpl/build cpp-docker-cxtpl cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE ..
 
 # Run resulting app in host OS:
 # ./build/<app>

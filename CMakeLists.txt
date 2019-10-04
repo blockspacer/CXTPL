@@ -21,17 +21,27 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
 
+set(USE_G3LOG
+  TRUE CACHE BOOL
+  "Use g3log logger")
+
+set(USE_FOLLY
+  TRUE CACHE BOOL
+  "Use facebook/folly library (Apache License 2.0)")
+
+set(USE_RANG
+  FALSE CACHE BOOL
+  "Use RANG for coloring terminal")
+
+set(BUILD_EXAMPLES
+  FALSE CACHE BOOL
+  "Use built-in examples")
+
+set(ENABLE_TESTS
+  FALSE CACHE BOOL
+  "Use unit tests")
+
 include(Dependencies.cmake)
-
-option(USE_G3LOG "Use g3log logger" ON)
-
-option(USE_FOLLY "Use facebook/folly library (Apache License 2.0)" ON)
-
-option(USE_RANG "Use RANG for coloring terminal" OFF)
-
-option(BUILD_EXAMPLES "Use built-in examples" OFF)
-
-option(ENABLE_TESTS "Use unit tests" OFF)
 
 set(USED_SYSTEM_LIBS
     Threads::Threads # pthread, https://cmake.org/cmake/help/v3.13/module/FindThreads.html
@@ -67,8 +77,6 @@ add_library(CXTPL_core STATIC
             ${CMAKE_CURRENT_SOURCE_DIR}/include/integrations/outcome/error_utils.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/integrations/outcome/error_macros.hpp)
 
-#message(STATUS G3LOG_LIBRARIES1=${G3LOG_LIBRARIES})
-
 target_link_libraries(
   CXTPL_core
   PUBLIC ${FOLLY_LIBRARIES}
@@ -95,7 +103,8 @@ target_include_directories(
   CXTPL_core
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/submodules/boost.outcome/include/outcome/quickcpplib/include/ # TODO
-    ${CMAKE_CURRENT_SOURCE_DIR}/submodules/folly # TODO
+    # fatal error: folly/executors/CPUThreadPoolExecutor.h: No such file or directory
+    #${CMAKE_CURRENT_SOURCE_DIR}/submodules/folly # TODO
     ${LIBIBERTY_INCLUDE_DIR} # used by folly
     ${G3LOG_INCLUDE_DIR} # used by folly
     ${LIBEVENT_INCLUDE_DIR} # used by folly
@@ -123,7 +132,6 @@ set_property(TARGET CXTPL_core PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 target_compile_definitions(CXTPL_core
                            PUBLIC
-                           FOLLY_NO_CONFIG=1 # we don't build a folly/folly-config.h
                            GOOGLE_GLOG_DLL_DECL=
                            # https://stackoverflow.com/a/30877725
                            #BOOST_SYSTEM_NO_DEPRECATED

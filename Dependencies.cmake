@@ -58,7 +58,9 @@ message(STATUS "ZLIB_LIBRARIES = ${ZLIB_LIBRARIES}")
 message(STATUS "CMAKE_DL_LIBS = ${CMAKE_DL_LIBS}")
 
 if(USE_RANG)
-  option(RANG_FIND_REQUIRED "RANG_FIND_REQUIRED" ON)
+  set(RANG_FIND_REQUIRED
+    TRUE CACHE BOOL
+    "RANG_FIND_REQUIRED")
   find_package(Rang REQUIRED)
   message(STATUS "RANG found at ${RANG_INCLUDE_DIR}")
 else()
@@ -66,7 +68,9 @@ else()
 endif()
 
 if(USE_G3LOG)
-  option(G3LOG_FIND_REQUIRED "G3LOG_FIND_REQUIRED" ON)
+  set(G3LOG_FIND_REQUIRED
+    TRUE CACHE BOOL
+    "G3LOG_FIND_REQUIRED")
   find_package(g3log REQUIRED)
   message(STATUS "g3log logger found at ${G3LOG_LIBRARIES} AND ${G3LOG_INCLUDE_DIR}")
 else()

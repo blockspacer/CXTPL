@@ -10,6 +10,27 @@
 ARG UBUNTU_VERSION=18.04
 FROM        ubuntu:${UBUNTU_VERSION} as cxtpl_build_env
 
+# https://askubuntu.com/a/1013396
+# https://github.com/phusion/baseimage-docker/issues/319
+# RUN export DEBIAN_FRONTEND=noninteractive
+# Set it via ARG as this only is available during build:
+ARG DEBIAN_FRONTEND=noninteractive
+ARG ENABLE_LLVM="True"
+ARG GIT_EMAIL="you@example.com"
+ARG GIT_USERNAME="Your Name"
+ARG APT="apt-get -qq --no-install-recommends"
+# docker build --build-arg NO_SSL="False" APT="apt-get -qq --no-install-recommends" .
+ARG NO_SSL="True"
+ENV LC_ALL=C.UTF-8 \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    #TERM=screen \
+    PATH=/usr/local/bin/:/usr/local/include/:/usr/lib/clang/6.0/include:/usr/lib/llvm-6.0/include/:$PATH \
+    GIT_AUTHOR_NAME=$GIT_USERNAME \
+    GIT_AUTHOR_EMAIL=$GIT_EMAIL \
+    GIT_COMMITTER_NAME=$GIT_USERNAME \
+    GIT_COMMITTER_EMAIL=$GIT_EMAIL
+
 # Give docker the rights to access X-server
 # sudo -E xhost +local:docker
 
@@ -50,33 +71,6 @@ FROM        ubuntu:${UBUNTU_VERSION} as cxtpl_build_env
 
 # Run resulting app in host OS:
 # ./build/<app>
-
-# https://askubuntu.com/a/1013396
-# https://github.com/phusion/baseimage-docker/issues/319
-# RUN export DEBIAN_FRONTEND=noninteractive
-# Set it via ARG as this only is available during build:
-ARG DEBIAN_FRONTEND=noninteractive
-
-ARG ENABLE_LLVM="True"
-
-ARG GIT_EMAIL="you@example.com"
-
-ARG GIT_USERNAME="Your Name"
-
-ENV LC_ALL=C.UTF-8 \
-    LANG=en_US.UTF-8 \
-    LANGUAGE=en_US:en \
-    #TERM=screen \
-    PATH=/usr/local/bin/:/usr/lib/clang/6.0/include:/usr/lib/llvm-6.0/include/:$PATH \
-    GIT_AUTHOR_NAME=$GIT_USERNAME \
-    GIT_AUTHOR_EMAIL=$GIT_EMAIL \
-    GIT_COMMITTER_NAME=$GIT_USERNAME \
-    GIT_COMMITTER_EMAIL=$GIT_EMAIL
-
-ARG APT="apt-get -qq --no-install-recommends"
-
-# docker build --build-arg NO_SSL="False" APT="apt-get -qq --no-install-recommends" .
-ARG NO_SSL="True"
 
 # TODO
 # better dev-env https://github.com/aya/infra/blob/318b16621c7f6d3cd33cfd481f46eed5d750b6aa/stack/ide/docker/ide/Dockerfile
@@ -281,6 +275,7 @@ RUN set -ex \
                     fakeroot \
                     dpkg-dev \
                     libcurl4-openssl-dev \
+                    libzstd-dev \
   && \
   $APT install -y mesa-utils \
                             libglu1-mesa-dev \
@@ -294,7 +289,8 @@ RUN set -ex \
                             python3-setuptools \
   && \
   $APT install -y nano \
-                            mc
+                            mc \
+                            bash
 
 #                            python \
 #                            python-dev \
@@ -513,6 +509,23 @@ WORKDIR /opt
 
 # allows individual sections to be run by doing: docker build --target cxtpl_tool ...
 FROM        cxtpl_build_env as cxtpl_tool
+# https://askubuntu.com/a/1013396
+# https://github.com/phusion/baseimage-docker/issues/319
+# RUN export DEBIAN_FRONTEND=noninteractive
+# Set it via ARG as this only is available during build:
+ARG DEBIAN_FRONTEND=noninteractive
+ARG GIT_EMAIL="you@example.com"
+ARG GIT_USERNAME="Your Name"
+ARG APT="apt-get -qq --no-install-recommends"
+ENV LC_ALL=C.UTF-8 \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    #TERM=screen \
+    PATH=/usr/local/bin/:/usr/local/include/:/usr/lib/clang/6.0/include:/usr/lib/llvm-6.0/include/:$PATH \
+    GIT_AUTHOR_NAME=$GIT_USERNAME \
+    GIT_AUTHOR_EMAIL=$GIT_EMAIL \
+    GIT_COMMITTER_NAME=$GIT_USERNAME \
+    GIT_COMMITTER_EMAIL=$GIT_EMAIL
 
 # NOTE: create folder `.ca-certificates` with custom certs
 # switch to root
@@ -563,21 +576,43 @@ RUN set -ex \
   && \
   $APT purge -y cmake || true
 
-RUN set -ex \
-  && \
-  /bin/bash -c "source /opt/cxtpl/scripts/install_cmake.sh" \
-  && \
-  /bin/bash -c "source /opt/cxtpl/scripts/install_g3log.sh" \
-  && \
-  # gtest \
-  /bin/bash -c "source /opt/cxtpl/scripts/install_gtest.sh" \
-  && \
-  # gflags \
-  /bin/bash -c "source /opt/cxtpl/scripts/install_gflags.sh" \
-  && \
-  # folly \
-  # NOTE: we patched folly for clang support https://github.com/facebook/folly/issues/976 \
-  /bin/bash -c "source /opt/cxtpl/scripts/install_folly.sh"
+#RUN set -ex \
+#  && \
+#  /bin/bash -c "source /opt/cxtpl/scripts/install_cmake.sh" \
+#  && \
+#  /bin/bash -c "source /opt/cxtpl/scripts/install_g3log.sh" \
+#  && \
+#  # gtest \
+#  /bin/bash -c "source /opt/cxtpl/scripts/install_gtest.sh" \
+#  && \
+#  # gflags \
+#  /bin/bash -c "source /opt/cxtpl/scripts/install_gflags.sh"
+#  && \
+#  # folly \
+#  /bin/bash -c "source /opt/cxtpl/scripts/install_folly.sh"
+
+RUN ["bash", "-c", "bash /opt/cxtpl/scripts/install_cmake.sh \
+                        && \
+                        bash /opt/cxtpl/scripts/install_g3log.sh \
+                        && \
+                        bash /opt/cxtpl/scripts/install_gtest.sh \
+                        && \
+                        bash /opt/cxtpl/scripts/install_gflags.sh"]
+
+WORKDIR /opt/cxtpl
+RUN ["bash", "-c", "bash /opt/cxtpl/scripts/install_folly.sh"]
+WORKDIR /opt/cxtpl
+
+RUN ls -artl submodules/folly \
+    && \
+    ls -artl submodules/folly/build/fbcode_builder/CMake \
+    && \
+    file /usr/local/include/folly/folly-config.h
+
+#RUN set -ex \
+#  # folly \
+#  # NOTE: we patched folly for clang support https://github.com/facebook/folly/issues/976 \
+#  /bin/bash -c "source /opt/cxtpl/scripts/install_folly.sh"
 
 RUN set -ex \
   && \
@@ -612,7 +647,7 @@ RUN         $APT remove -y \
                     git \
                     wget
 
-RUN echo ClientAliveInterval 60 >> /etc/ssh/sshd_config
+RUN mkdir -p /etc/ssh/ && echo ClientAliveInterval 60 >> /etc/ssh/sshd_config
 
 #RUN service ssh restart
 
@@ -620,6 +655,8 @@ RUN echo ClientAliveInterval 60 >> /etc/ssh/sshd_config
 
 # default
 FROM        cxtpl_tool
+
+# CMD [ "bash", "-c", "echo", "$HOME" ]
 
 CMD ["bash"]
 
