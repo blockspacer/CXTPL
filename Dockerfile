@@ -43,10 +43,10 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 #  docker build  \
 #  --build-arg http_proxy=http://172.17.0.1:3128 \
 #  --build-arg https_proxy=http://172.17.0.1:3128 \
-#  --build-arg no_proxy=localhost,127.0.0.*,10.*,192.168.*,*.somecorp.ru,*.mycorp.ru \
+#  --build-arg no_proxy=192.168.99.100,localhost,127.0.0.*,10.*,192.168.*,*.somecorp.ru,*.mycorp.ru \
 #  --build-arg HTTP_PROXY=http://172.17.0.1:3128 \
 #  --build-arg HTTPS_PROXY=http://172.17.0.1:3128 \
-#  --build-arg NO_PROXY=localhost,127.0.0.*,10.*,192.168.*,*.somecorp.ru,*.mycorp.ru \
+#  --build-arg NO_PROXY=192.168.99.100,localhost,127.0.0.*,10.*,192.168.*,*.somecorp.ru,*.mycorp.ru \
 #  --no-cache -t cpp-docker-cxtpl .
 # OR
 # --network=host. This will make the build command use the network settings of the host.
