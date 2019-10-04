@@ -77,7 +77,6 @@ ARG APT="apt-get -qq --no-install-recommends"
 
 # docker build --build-arg NO_SSL="False" APT="apt-get -qq --no-install-recommends" .
 ARG NO_SSL="True"
-ARG APT="apt-get -qq --no-install-recommends"
 
 # TODO
 # better dev-env https://github.com/aya/infra/blob/318b16621c7f6d3cd33cfd481f46eed5d750b6aa/stack/ide/docker/ide/Dockerfile
