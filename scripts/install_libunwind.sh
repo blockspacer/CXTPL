@@ -10,7 +10,7 @@ cmake -E make_directory libunwind-tmp
 
 pushd libunwind-tmp
 
-git clone --depth 1 git://github.com/pathscale/libunwind.git
+git clone --depth 1 https://github.com/pathscale/libunwind.git
 
 pushd libunwind
 

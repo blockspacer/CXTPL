@@ -10,11 +10,6 @@
 ARG UBUNTU_VERSION=18.04
 FROM        ubuntu:${UBUNTU_VERSION} as cxtpl_build_env
 
-# https://askubuntu.com/a/1013396
-# https://github.com/phusion/baseimage-docker/issues/319
-# RUN export DEBIAN_FRONTEND=noninteractive
-# Set it via ARG as this only is available during build:
-ARG DEBIAN_FRONTEND=noninteractive
 ARG ENABLE_LLVM="True"
 ARG GIT_EMAIL="you@example.com"
 ARG GIT_USERNAME="Your Name"
@@ -29,8 +24,14 @@ ENV LC_ALL=C.UTF-8 \
     GIT_AUTHOR_NAME=$GIT_USERNAME \
     GIT_AUTHOR_EMAIL=$GIT_EMAIL \
     GIT_COMMITTER_NAME=$GIT_USERNAME \
-    GIT_COMMITTER_EMAIL=$GIT_EMAIL
-
+    GIT_COMMITTER_EMAIL=$GIT_EMAIL \
+    WDIR=/opt
+RUN mkdir -p $WDIR
+# https://askubuntu.com/a/1013396
+# https://github.com/phusion/baseimage-docker/issues/319
+# RUN export DEBIAN_FRONTEND=noninteractive
+# Set it via ARG as this only is available during build:
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 # Give docker the rights to access X-server
 # sudo -E xhost +local:docker
 
@@ -38,7 +39,8 @@ ENV LC_ALL=C.UTF-8 \
 # sudo -E docker build --no-cache -t cpp-docker-cxtpl .
 #
 # OR under proxy:
-# sudo -E docker build  \
+# sudo -E DOCKER_OPTS='--insecure-registry registry.docker.io --insecure-registry production.cloudflare.docker.com' \
+#  docker build  \
 #  --build-arg http_proxy=http://172.17.0.1:3128 \
 #  --build-arg https_proxy=http://172.17.0.1:3128 \
 #  --build-arg no_proxy=localhost,127.0.0.*,10.*,192.168.*,*.somecorp.ru,*.mycorp.ru \
@@ -209,6 +211,9 @@ RUN set -ex \
     && \
     git config --global http.postBuffer 1048576000 \
     && \
+    # solves 'Connection time out' on server in company domain. \
+    git config --global url."https://github.com".insteadOf git://github.com \
+    && \
     export GIT_SSL_NO_VERIFY=true \
     ; \
   fi \
@@ -217,6 +222,7 @@ RUN set -ex \
   && \
   $APT install -y \
                     make \
+                    autoconf libtool \
                     git \
                     curl \
                     vim \
@@ -380,7 +386,7 @@ RUN mkdir -p $HOME/.pip/ \
 
 # RUN cat $HOME/.pip/pip.conf
 
-WORKDIR /opt
+WORKDIR $WDIR
 
 # pip install setuptools --upgrade
 
@@ -449,71 +455,10 @@ RUN mkdir -p $HOME/.conan/profiles/ \
   && \
   echo "CXX=/usr/bin/g++" >> ~/.conan/profiles/gcc
 
-WORKDIR /opt
-
-# libunwind
-# WORKDIR /opt
-# RUN git clone --depth=1 --recurse-submodules --single-branch --branch=master git://github.com/pathscale/libunwind.git
-# WORKDIR /opt/libunwind
-# RUN ./autogen.sh
-# RUN ./configure CFLAGS="-fPIC" LDFLAGS="-L$PWD/src/.libs"
-# RUN make -j4
-# RUN make install prefix=/usr/local
-# RUN rm -rf /opt/libunwind
-
-# g3log
-# WORKDIR /opt
-# RUN git clone --depth=1 --recurse-submodules --single-branch --branch=master https://github.com/KjellKod/g3log.git
-# WORKDIR /opt/g3log
-# RUN cmake . -DBUILD_STATIC_LIBS=ON -DG3_SHARED_LIB=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC=ON # -DCPACK_PACKAGING_INSTALL_PREFIX=. -DCMAKE_BUILD_TYPE=Release
-# RUN cmake --build . --config Release --clean-first -- -j4
-# RUN make install
-# RUN rm -rf /opt/g3log
-
-# gflags
-# WORKDIR /opt
-# RUN cmake -E make_directory build-gflags
-# WORKDIR /opt/build-gflags
-# RUN wget https://github.com/gflags/gflags/archive/v2.2.2.tar.gz && \
-#     tar zxf v2.2.2.tar.gz && \
-#     rm -f v2.2.2.tar.gz && \
-#     cd gflags-2.2.2 && \
-#     cmake -DGFLAGS_BUILD_SHARED_LIBS=OFF -DGFLAGS_BUILD_STATIC_LIBS=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON . && \
-#     make && \
-#     make install
-# RUN rm -rf /opt/build-gflags
-
-# gtest
-# WORKDIR /opt
-# RUN cmake -E make_directory build-gtest
-# WORKDIR /opt/build-gtest
-# RUN wget https://github.com/google/googletest/archive/release-1.8.0.tar.gz && \
-#     tar zxf release-1.8.0.tar.gz && \
-#     rm -f release-1.8.0.tar.gz && \
-#     cd googletest-release-1.8.0 && \
-#     cmake . && \
-#     make && \
-#     make install
-# RUN rm -rf /opt/build-gtest
-
-# openssl: relocation error: openssl: symbol EVP_mdc2 version OPENSSL_1_1_0 not defined in file libcrypto.so.1.1 with link time reference
-# https://stackoverflow.com/a/51565653/1373413
-# RUN cmake -E make_directory /opt/openssl
-# WORKDIR /opt/openssl
-# RUN wget https://www.openssl.org/source/old/1.1.0/openssl-1.1.0g.tar.gz --no-check-certificate
-# RUN tar xzvf openssl-1.1.0g.tar.gz
-# WORKDIR /opt/openssl/openssl-1.1.0g
-# RUN ./config
-# RUN make
-# RUN make install
+WORKDIR $WDIR
 
 # allows individual sections to be run by doing: docker build --target cxtpl_tool ...
 FROM        cxtpl_build_env as cxtpl_tool
-# https://askubuntu.com/a/1013396
-# https://github.com/phusion/baseimage-docker/issues/319
-# RUN export DEBIAN_FRONTEND=noninteractive
-# Set it via ARG as this only is available during build:
-ARG DEBIAN_FRONTEND=noninteractive
 ARG GIT_EMAIL="you@example.com"
 ARG GIT_USERNAME="Your Name"
 ARG APT="apt-get -qq --no-install-recommends"
@@ -525,7 +470,14 @@ ENV LC_ALL=C.UTF-8 \
     GIT_AUTHOR_NAME=$GIT_USERNAME \
     GIT_AUTHOR_EMAIL=$GIT_EMAIL \
     GIT_COMMITTER_NAME=$GIT_USERNAME \
-    GIT_COMMITTER_EMAIL=$GIT_EMAIL
+    GIT_COMMITTER_EMAIL=$GIT_EMAIL \
+    WDIR=/opt
+RUN mkdir -p $WDIR
+# https://askubuntu.com/a/1013396
+# https://github.com/phusion/baseimage-docker/issues/319
+# RUN export DEBIAN_FRONTEND=noninteractive
+# Set it via ARG as this only is available during build:
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
 # NOTE: create folder `.ca-certificates` with custom certs
 # switch to root
@@ -535,14 +487,14 @@ RUN update-ca-certificates --fresh
 # switch back to custom user
 #USER docker
 
-WORKDIR /opt/
+WORKDIR $WDIR
 
 # NOTE: ADD invalidate the cache for the copy
-ADD . /opt/cxtpl
+ADD . $WDIR/cxtpl
 
 # RUN git clone --depth=1 --recurse-submodules --single-branch --branch=master https://github.com/blockspacer/cxtpl.git
 
-WORKDIR /opt/cxtpl
+WORKDIR $WDIR/cxtpl
 
 # need some git config to apply git patch
 RUN git config --global user.email "$GIT_EMAIL" \
@@ -557,19 +509,18 @@ RUN git config --global user.email "$GIT_EMAIL" \
 RUN git submodule update --init --recursive --depth 50 || true
 #RUN git submodule update --force --recursive --init --remote || true
 
-RUN ls -artl /opt/cxtpl/ \
+RUN ls -artl $WDIR/cxtpl/ \
   && \
-  ls -artl /opt/cxtpl/scripts \
+  ls -artl $WDIR/cxtpl/scripts \
   && \
-  ls -artl /opt/cxtpl/submodules
+  ls -artl $WDIR/cxtpl/submodules
 
-WORKDIR /opt/cxtpl
-
-RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_cmake.sh"]
-RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_g3log.sh"]
-RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_gtest.sh"]
-RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_gflags.sh"]
-RUN ["chmod", "+x", "/opt/cxtpl/scripts/install_folly.sh"]
+WORKDIR $WDIR/cxtpl
+RUN ["chmod", "+x", "scripts/install_cmake.sh"]
+RUN ["chmod", "+x", "scripts/install_g3log.sh"]
+RUN ["chmod", "+x", "scripts/install_gtest.sh"]
+RUN ["chmod", "+x", "scripts/install_gflags.sh"]
+RUN ["chmod", "+x", "scripts/install_folly.sh"]
 
 # Uninstall the default version provided by Ubuntu’s package manager, so we can install custom one
 RUN set -ex \
@@ -578,30 +529,30 @@ RUN set -ex \
 
 #RUN set -ex \
 #  && \
-#  /bin/bash -c "source /opt/cxtpl/scripts/install_cmake.sh" \
+#  /bin/bash -c "source $WDIR/cxtpl/scripts/install_cmake.sh" \
 #  && \
-#  /bin/bash -c "source /opt/cxtpl/scripts/install_g3log.sh" \
+#  /bin/bash -c "source $WDIR/cxtpl/scripts/install_g3log.sh" \
 #  && \
 #  # gtest \
-#  /bin/bash -c "source /opt/cxtpl/scripts/install_gtest.sh" \
+#  /bin/bash -c "source $WDIR/cxtpl/scripts/install_gtest.sh" \
 #  && \
 #  # gflags \
-#  /bin/bash -c "source /opt/cxtpl/scripts/install_gflags.sh"
+#  /bin/bash -c "source $WDIR/cxtpl/scripts/install_gflags.sh"
 #  && \
 #  # folly \
-#  /bin/bash -c "source /opt/cxtpl/scripts/install_folly.sh"
+#  /bin/bash -c "source $WDIR/cxtpl/scripts/install_folly.sh"
 
-RUN ["bash", "-c", "bash /opt/cxtpl/scripts/install_cmake.sh \
+RUN ["bash", "-c", "bash $WDIR/cxtpl/scripts/install_cmake.sh \
                         && \
-                        bash /opt/cxtpl/scripts/install_g3log.sh \
+                        bash $WDIR/cxtpl/scripts/install_g3log.sh \
                         && \
-                        bash /opt/cxtpl/scripts/install_gtest.sh \
+                        bash $WDIR/cxtpl/scripts/install_gtest.sh \
                         && \
-                        bash /opt/cxtpl/scripts/install_gflags.sh"]
+                        bash $WDIR/cxtpl/scripts/install_gflags.sh"]
 
-WORKDIR /opt/cxtpl
-RUN ["bash", "-c", "bash /opt/cxtpl/scripts/install_folly.sh"]
-WORKDIR /opt/cxtpl
+WORKDIR $WDIR/cxtpl
+RUN ["bash", "-c", "bash $WDIR/cxtpl/scripts/install_folly.sh"]
+WORKDIR $WDIR/cxtpl
 
 RUN ls -artl submodules/folly \
     && \
@@ -612,7 +563,7 @@ RUN ls -artl submodules/folly \
 #RUN set -ex \
 #  # folly \
 #  # NOTE: we patched folly for clang support https://github.com/facebook/folly/issues/976 \
-#  /bin/bash -c "source /opt/cxtpl/scripts/install_folly.sh"
+#  /bin/bash -c "source $WDIR/cxtpl/scripts/install_folly.sh"
 
 RUN set -ex \
   && \
@@ -634,18 +585,21 @@ RUN set -ex \
   # install lib and CXTPL_tool \
   cmake -E chdir build make install
 
-WORKDIR /opt/cxtpl
+WORKDIR $WDIR/cxtpl
 
-RUN rm -rf /opt/cxtpl
+RUN rm -rf $WDIR/cxtpl
 
 # reset
-WORKDIR /opt
+WORKDIR $WDIR
 # LD_LIBRARY_PATH=/usr/lib:/usr/local/lib
 
 # remove unused apps after install
 RUN         $APT remove -y \
                     git \
                     wget
+
+RUN         $APT clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN mkdir -p /etc/ssh/ && echo ClientAliveInterval 60 >> /etc/ssh/sshd_config
 
@@ -655,8 +609,6 @@ RUN mkdir -p /etc/ssh/ && echo ClientAliveInterval 60 >> /etc/ssh/sshd_config
 
 # default
 FROM        cxtpl_tool
-
-# CMD [ "bash", "-c", "echo", "$HOME" ]
-
+WORKDIR $WDIR
+ENTRYPOINT ["/bin/bash"]
 CMD ["bash"]
-
