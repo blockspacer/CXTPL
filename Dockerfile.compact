@@ -1,0 +1,48 @@
+FROM ubuntu:18.04
+
+LABEL description="Docker Image development environment"
+
+ARG LLVM_VERSION=6.0
+ARG CMAKE_VERSION=3.15.4
+ARG CONAN_VERSION=1_19_0
+
+ENV LC_ALL=C.UTF-8 \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+    && apt-get install -y \
+        gnupg2 \
+        wget \
+    && echo "Adding LLVM ${LLVM_VERSION} Repository" \
+    && wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key --no-check-certificate | apt-key add - \
+    && echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-${LLVM_VERSION} main" >> /etc/apt/sources.list.d/llvm.list \
+    && apt-get update \
+    && echo "Installing development tools" \
+    && apt-get install -y \
+        git \
+        locales \
+        build-essential \
+        clang-6.0 python-lldb-6.0 lldb-6.0 lld-6.0 llvm-6.0-dev \
+        clang-tools-6.0 libclang-common-6.0-dev libclang-6.0-dev \
+        libc++abi-dev libc++-dev libclang-common-6.0-dev libclang1-6.0 libclang-6.0-dev \
+        libstdc++6 libstdc++-6-dev \
+    && echo "Installing CMake ${CMAKE_VERSION}" \
+    && wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz \
+    && tar -xzf cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz -C /opt/ \
+    && update-alternatives --install /usr/local/bin/cmake cmake /opt/cmake-${CMAKE_VERSION}-Linux-x86_64/bin/cmake 100 \
+    && update-alternatives --install /usr/local/bin/ccmake ccmake /opt/cmake-${CMAKE_VERSION}-Linux-x86_64/bin/ccmake 100 \
+    && update-alternatives --install /usr/local/bin/ctest ctest /opt/cmake-${CMAKE_VERSION}-Linux-x86_64/bin/ctest 100 \
+    && update-alternatives --install /usr/local/bin/cpack cpack /opt/cmake-${CMAKE_VERSION}-Linux-x86_64/bin/cpack 100 \
+    && echo "Installing Conan ${CONAN_VERSION}" \
+    && wget https://dl.bintray.com/conan/installers/conan-ubuntu-64_${CONAN_VERSION}.deb \
+    && dpkg -i conan-ubuntu-64_${CONAN_VERSION}.deb \
+    && conan profile new default --detect \
+    # Optional - enable CXX11 ABI
+    && conan profile update settings.compiler.libcxx=libstdc++11 default \
+    && echo "Cleaning up" \
+    && apt-get autoremove --purge \
+    && rm conan-ubuntu-64_${CONAN_VERSION}.deb \
+    && rm cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz \
+    && rm -rf /var/cache/apt/*
