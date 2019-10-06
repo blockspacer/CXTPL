@@ -225,7 +225,7 @@ RUN set -ex \
   && \
   $APT install -y \
                     make \
-                    autoconf libtool \
+                    autoconf automake autotools-dev libtool \
                     git \
                     curl \
                     vim \
@@ -525,7 +525,7 @@ RUN ["chmod", "+x", "scripts/install_gtest.sh"]
 RUN ["chmod", "+x", "scripts/install_gflags.sh"]
 RUN ["chmod", "+x", "scripts/install_folly.sh"]
 
-# Uninstall the default version provided by Ubuntu’s package manager, so we can install custom one
+# Uninstall the default version provided by Ubuntuï¿½s package manager, so we can install custom one
 RUN set -ex \
   && \
   $APT purge -y cmake || true
