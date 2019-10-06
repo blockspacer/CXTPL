@@ -14,6 +14,8 @@ set( BOOST_LIBS CACHE STRING ${BOOST_ROOT}/lib )
 
 find_package( Boost
   COMPONENTS
+  coroutine
+  fiber
   context
   filesystem
   program_options
@@ -21,6 +23,12 @@ find_package( Boost
   system
   thread
   REQUIRED )
+
+message("Found Boost ${Boost_LIBRARY_DIRS} ${Boost_LIB_VERSION}")
+
+if(Boost_VERSION GREATER_EQUAL 107100)
+  add_definitions(-DBOOST_BEAST_SEPARATE_COMPILATION -DBOOST_ASIO_SEPARATE_COMPILATION)
+endif()
 
 add_library( boost_outcome INTERFACE )
 target_include_directories( boost_outcome SYSTEM INTERFACE "submodules/boost.outcome/include" )
