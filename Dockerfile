@@ -1,4 +1,4 @@
-# NOTE: you can use docker_pull.py if docker hub blocked under corp proxy
+﻿# NOTE: you can use docker_pull.py if docker hub blocked under corp proxy
 # See:
 # + https://gist.github.com/blockspacer/893b31e61c88f6899ffd0813111b3e41#file-docker-conf-proxy-rxt
 # + https://stackoverflow.com/a/53551452
@@ -427,9 +427,9 @@ RUN mkdir -p $HOME/.conan/profiles/ \
   && \
   echo "[env]" >> ~/.conan/profiles/clang \
   && \
-  echo "CC=/usr/bin/clang" >> ~/.conan/profiles/clang \
+  echo "CC=/usr/bin/clang-6.0" >> ~/.conan/profiles/clang \
   && \
-  echo "CXX=/usr/bin/clang++" >> ~/.conan/profiles/clang
+  echo "CXX=/usr/bin/clang++-6.0" >> ~/.conan/profiles/clang
 
 # TODO: use conan profile new https://github.com/conan-io/conan/issues/1541#issuecomment-321235829
 RUN mkdir -p $HOME/.conan/profiles/ \
