@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10.0 FATAL_ERROR)
+﻿cmake_minimum_required(VERSION 3.10.0 FATAL_ERROR)
 
 set(PROJECT_NAME CXTPL)
 set(PROJECT_VERSION 1.0.1)
@@ -55,6 +55,8 @@ set(USED_SYSTEM_LIBS
 
 set(USED_BOOST_LIBS
     Boost::boost
+    Boost::coroutine
+    Boost::fiber
     Boost::context
     Boost::filesystem
     Boost::program_options
