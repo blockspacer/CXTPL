@@ -151,6 +151,8 @@ static outcome::result<void, GeneratorErrorExtraInfo>
     && supported_tags.code_append_raw.open_tag.opening
       == supported_tags.openTagStart
     && supported_tags.code_append_as_string.open_tag.opening
+      == supported_tags.openTagStart
+    && supported_tags.code_include.open_tag.opening
       == supported_tags.openTagStart;
 
   if(!isTagOpeningsValid) {
@@ -302,8 +304,10 @@ outcome::result<void, GeneratorErrorExtraInfo> Generator::handleTag(
     closedTagResult = encloseTag(str, curPos, start_tag_str, close_tag_str);
   Generator::EncloseTagResult closedTag = OUTCOME_TRYX(closedTagResult);
 
-  tag.callback(resultStr, closedTag.tagCode, kOutVarName);
-  return outcome::success();
+  const auto cb_result
+    = tag.callback(resultStr, closedTag.tagCode, kOutVarName);
+
+  return cb_result;
 }
 
 outcome::result<void, GeneratorErrorExtraInfo> Generator::handleTagStart(
@@ -333,6 +337,12 @@ outcome::result<void, GeneratorErrorExtraInfo> Generator::handleTagStart(
       startsWith(str, prefix)) {
     str = removePrefix( str, prefix, curPos );
     found_tag = supported_tags().code_append_as_string;
+    return handleTag(str, found_tag, curPos, resultStr);
+  } else if(const auto prefix
+      = tag_attr_with_closing(supported_tags().code_include.open_tag);
+      startsWith(str, prefix)) {
+    str = removePrefix( str, prefix, curPos );
+    found_tag = supported_tags().code_include;
     return handleTag(str, found_tag, curPos, resultStr);
   }
 

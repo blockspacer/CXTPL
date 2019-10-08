@@ -34,6 +34,8 @@ if(CXTPL_tool)
   function(target_add_CXTPL_tool
            TARGET
            GUID
+           INPUTS_DIR
+           OUTPUTS_DIR
            INPUTS
            OUTPUTS)
     if(NOT CXTPL_tool_PROGRAM)
@@ -50,6 +52,8 @@ if(CXTPL_tool)
         ${CMAKE_COMMAND}
         -DCXTPL_tool_PROGRAM=${CXTPL_tool_PROGRAM}
         -DTHREADS=2
+        -DINPUTS_DIR=${INPUTS_DIR}
+        -DOUTPUTS_DIR=${OUTPUTS_DIR}
         -DINPUTS=${INPUTS_as_string}
         -DOUTPUTS=${OUTPUTS_as_string}
         -DCXTPL_tool_LOG_CONFIG=.:=DBG9:default:console\;default=file:path=CXTPL_tool_for_${TARGET}.log,async=true,sync_level=DBG9\;console=stream:stream=stderr
@@ -63,6 +67,8 @@ if(CXTPL_tool)
         ${CMAKE_COMMAND}
         -DCXTPL_tool_PROGRAM=${CXTPL_tool_PROGRAM}
         -DTHREADS=2
+        -DINPUTS_DIR=${INPUTS_DIR}
+        -DOUTPUTS_DIR=${OUTPUTS_DIR}
         -DINPUTS="${INPUTS}"
         -DOUTPUTS="${OUTPUTS}"
         -DCXTPL_tool_LOG_CONFIG=".:=DBG9:default:console\;default=file:path=CXTPL_tool_for_${TARGET}.log,async=true,sync_level=DBG9\;console=stream:stream=stderr"

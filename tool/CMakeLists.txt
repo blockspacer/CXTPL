@@ -18,16 +18,6 @@ add_executable(CXTPL_tool
   ${CMAKE_CURRENT_SOURCE_DIR}/src/main_native.cpp
 )
 
-set( USED_SYSTEM_LIBS
-  Threads::Threads # pthread, https://cmake.org/cmake/help/v3.13/module/FindThreads.html
-  ${X11_LIBRARIES} # https://cmake.org/cmake/help/v3.13/module/FindX11.html
-  ${CMAKE_DL_LIBS} # https://cmake.org/cmake/help/v3.13/variable/CMAKE_DL_LIBS.html
-  EXPAT::EXPAT # https://cmake.org/cmake/help/v3.13/module/FindEXPAT.html
-  ZLIB::ZLIB # https://cmake.org/cmake/help/v3.13/module/FindZLIB.html
-  # Custom libs
-  stdc++fs # C++17 std::filesystem
-  CACHE INTERNAL "USED_SYSTEM_LIBS" )
-
 target_link_libraries(CXTPL_tool PUBLIC
   CXTPL_core
 )

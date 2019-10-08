@@ -24,5 +24,9 @@ namespace generated {
 
 // some code here...
 
+[[include part1.inc.cxtpl include]]
+
+// some code here...
+
 } // namespace cxxctp
 } // namespace generated

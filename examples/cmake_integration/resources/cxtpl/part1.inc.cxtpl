@@ -1,0 +1,9 @@
+﻿[[~]] int fileNameIndex = 0;
+[[~]] for(const auto& fileName: generator_includes) {
+int some[[* fileNameIndex *]] = 3;
+[[~]]   ++fileNameIndex;
+[[~]] }
+
+// ...
+
+int someJ = 5;

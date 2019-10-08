@@ -40,6 +40,10 @@ struct DefaultTags {
   /// Result will be converted to string (just wrapped in std::to_string).
   /// Requires `*]]` as closing tag.
   static const PairTag code_append_as_string;
+
+  /// \example
+  /// `[[include file/path/here include]]`
+  static const PairTag code_include;
 };
 
 } // namespace defaults

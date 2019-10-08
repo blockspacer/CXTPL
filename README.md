@@ -375,12 +375,6 @@ cmake -E chdir build cmake -E time cmake --build . -- -j6
 ```
 
 ```bash
-# (optional) check examples
-# cmake -E time cmake -E chdir build/examples/simple/ ./CXTPL_examples_simple
-# cmake -E time cmake -E chdir build/examples/cmake_integration/ ./CXTPL_examples_cmake_integration
-```
-
-```bash
 # install lib and CXTPL_tool
 sudo cmake -E chdir build make install
 CXTPL_tool --help
@@ -388,7 +382,7 @@ CXTPL_tool --help
 
 ```bash
 # run CXTPL_tool
-cmake -E time cmake -E chdir build/tool ./CXTPL_tool --help
+cmake -E time cmake -E chdir build/tool CXTPL_tool --help
 ```
 
 ```bash
@@ -398,6 +392,17 @@ echo "file2.cxtpl" >> build/file2.cxtpl
 echo "file3.cxtpl" >> build/file3.cxtpl
 echo "file4.cxtpl" >> build/file4.cxtpl
 cmake -E time ./build/tool/CXTPL_tool --threads 6 --input_files build/file1.cxtpl build/file2.cxtpl --output_files build/file1.cxtpl.generated.cpp build/file2.cxtpl.generated.cpp
+```
+
+```bash
+# (optional) check examples. Requires -DBUILD_EXAMPLES=TRUE
+# configure
+cmake -E chdir build cmake -E time cmake -DBUILD_EXAMPLES=TRUE -DENABLE_CLING=FALSE -DCMAKE_BUILD_TYPE=Debug ..
+# build
+cmake -E chdir build cmake -E time cmake --build . -- -j6
+# examples
+cmake -E time ./build/bin/CXTPL_examples_simple
+cmake -E time ./build/bin/CXTPL_examples_cmake_integration
 ```
 
 ## How to use CXTPL_tool
@@ -462,7 +467,9 @@ Macro `target_add_CXTPL_tool` will invoke `CXTPL_tool` on `TARGET_NAME_HERE`:
 find_package(CXTPL_tool REQUIRED)
 
 # create new codegen files for TARGET_NAME_HERE based on cxtpl_inputs and cxtpl_outputs
-target_add_CXTPL_tool(TARGET_NAME_HERE "${cxtpl_inputs}" "${cxtpl_outputs}")
+target_add_CXTPL_tool(TARGET_NAME_HERE
+  "${cxtpl_in_dir}" "${cxtpl_out_dir}"
+  "${cxtpl_inputs}" "${cxtpl_outputs}")
 ```
 
 See examples/cmake_integration

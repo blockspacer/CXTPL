@@ -45,6 +45,9 @@ struct GeneratorTags {
 
   PairTag code_append_as_string
     = defaults::DefaultTags::code_append_as_string;
+
+  PairTag code_include
+    = defaults::DefaultTags::code_include;
 };
 
 /// \brief used to generate C++ code from template
