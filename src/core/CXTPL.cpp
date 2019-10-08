@@ -132,28 +132,32 @@ struct ErrorDetails {
   }
 };
 
-static std::string tag_attr_with_closing(const SingleTag& tag) {
-  return std::string{tag.attrs} + tag.closing;
+static std::string tag_attr_with_closing(const SingleTag& tag,
+  const size_t closeIndex = 0)
+{
+  return std::string{tag.attrs} + tag.closing.at(closeIndex);
 }
 
-static std::string tag_to_string(const SingleTag& tag) {
-  return std::string{tag.opening} + tag.attrs + tag.closing;
+static std::string tag_to_string(const SingleTag& tag,
+  const size_t openIndex = 0, const size_t closeIndex = 0)
+{
+  return std::string{tag.opening.at(openIndex)} + tag.attrs + tag.closing.at(closeIndex);
 }
 
-#if !defined(NDEBUG)
+#if defined(TODO)//!defined(NDEBUG)
 static outcome::result<void, GeneratorErrorExtraInfo>
     performDebugChecks(const GeneratorTags& supported_tags) {
   bool isTagOpeningsValid =
-    supported_tags.code_line.open_tag.opening
-      == supported_tags.openTagStart
-    && supported_tags.code_block.open_tag.opening
-      == supported_tags.openTagStart
-    && supported_tags.code_append_raw.open_tag.opening
-      == supported_tags.openTagStart
-    && supported_tags.code_append_as_string.open_tag.opening
-      == supported_tags.openTagStart
-    && supported_tags.code_include.open_tag.opening
-      == supported_tags.openTagStart;
+    supported_tags.code_line.open_tag.opening.size()
+      == supported_tags.openTagStart.size()
+    && supported_tags.code_block.open_tag.opening.size()
+      == supported_tags.openTagStart.size()
+    && supported_tags.code_append_raw.open_tag.opening.size()
+      == supported_tags.openTagStart.size()
+    && supported_tags.code_append_as_string.open_tag.opening.size()
+      == supported_tags.openTagStart.size()
+    && supported_tags.code_include.open_tag.opening.size()
+      == supported_tags.openTagStart.size();
 
   if(!isTagOpeningsValid) {
     std::string error_details;
@@ -226,7 +230,7 @@ outcome::result<Generator::EncloseTagResult, GeneratorErrorExtraInfo>
 
 outcome::result<std::string, GeneratorErrorExtraInfo>
   Generator::generateFromString() {
-#if !defined(NDEBUG)
+#if defined(TODO)//!defined(NDEBUG)
   OUTCOME_TRY(performDebugChecks(supported_tags()));
 #endif
 
@@ -298,14 +302,39 @@ outcome::result<void, GeneratorErrorExtraInfo> Generator::handleTag(
     std::string_view& str, const PairTag& tag,
     Generator::Position& curPos, std::string& resultStr) {
   const std::string start_tag_str = tag_to_string(tag.open_tag);
-  const std::string close_tag_str = tag_to_string(tag.close_tag);
 
-  outcome::result<Generator::EncloseTagResult, GeneratorErrorExtraInfo>
-    closedTagResult = encloseTag(str, curPos, start_tag_str, close_tag_str);
-  Generator::EncloseTagResult closedTag = OUTCOME_TRYX(closedTagResult);
+  outcome::result<
+    void,
+    CXTPL::core::errors::GeneratorErrorExtraInfo> cb_result
+      = outcome::success();
 
-  const auto cb_result
-    = tag.callback(resultStr, closedTag.tagCode, kOutVarName);
+  for(size_t i = 0; i < tag.close_tag.opening.size(); i++) {
+    const std::string close_tag_str
+      = tag_to_string(tag.close_tag, i);
+    auto strToChange = str;
+    auto posToChange = curPos;
+    outcome::result<
+      Generator::EncloseTagResult, GeneratorErrorExtraInfo>
+        closedTagResult
+          = encloseTag(strToChange, posToChange,
+              start_tag_str, close_tag_str);
+
+    /// \note skip failed attempts until it is not last attempt
+    if(closedTagResult.has_error()
+       && i < (tag.close_tag.opening.size() - 1)) {
+      continue;
+    }
+    curPos = posToChange;
+    str = strToChange;
+
+    Generator::EncloseTagResult closedTag =
+      OUTCOME_TRYX(closedTagResult);
+
+    cb_result =
+      tag.callback(resultStr, closedTag.tagCode, kOutVarName);
+
+    return cb_result;
+  }
 
   return cb_result;
 }

@@ -186,6 +186,7 @@ static outcome::result<
       "(CXTPL) Empty file " + cleanPath};
   }
 
+  /// \todo detect BOM https://www.puredevsoftware.com/blog/2017/11/17/text-encoding/
   std::string clean_contents =
           file_contents
           /// \note save in UTF without BOM
@@ -239,8 +240,14 @@ const char* DefaultTags::openTagStart = CXTPL_TAG_OPENING;
 // end: ~]]
 const PairTag DefaultTags::code_block
   = PairTag {
-    SingleTag{openTagStart, "~", ""},
-    SingleTag{"", "~", CXTPL_TAG_CLOSING},
+    SingleTag{
+      {openTagStart},
+      "~",
+      {""}},
+    SingleTag{
+      {""},
+      "~",
+      {CXTPL_TAG_CLOSING}},
     &code_block_cb
   };
 
@@ -248,8 +255,14 @@ const PairTag DefaultTags::code_block
 // end: newline
 const PairTag DefaultTags::code_line
   = PairTag {
-    SingleTag{openTagStart, "~", CXTPL_TAG_CLOSING},
-    SingleTag{CXTPL_NEWLINE, "", ""},
+    SingleTag{
+      {openTagStart},
+      "~",
+      {CXTPL_TAG_CLOSING}},
+    SingleTag{
+      {CXTPL_NEWLINE, "\t", "\r", "\v", "\f"},
+      "",
+      {""}},
     &code_line_cb
   };
 
@@ -257,8 +270,14 @@ const PairTag DefaultTags::code_line
 // end: +]]
 const PairTag DefaultTags::code_append_raw
   = PairTag {
-      SingleTag{openTagStart, "+", ""},
-      SingleTag{"", "+", CXTPL_TAG_CLOSING},
+      SingleTag{
+        {openTagStart},
+        "+",
+        {""}},
+      SingleTag{
+        {""},
+        "+",
+        {CXTPL_TAG_CLOSING}},
       &code_append_raw_cb
     };
 
@@ -266,8 +285,14 @@ const PairTag DefaultTags::code_append_raw
 // end: *]]
 const PairTag DefaultTags::code_append_as_string
   = PairTag {
-      SingleTag{openTagStart, "*", ""},
-      SingleTag{"", "*", CXTPL_TAG_CLOSING},
+      SingleTag{
+        {openTagStart},
+        "*",
+        {""}},
+      SingleTag{
+        {""},
+        "*",
+        {CXTPL_TAG_CLOSING}},
       &code_append_as_string_cb
     };
 
@@ -275,8 +300,14 @@ const PairTag DefaultTags::code_append_as_string
 // end: include]]
 const PairTag DefaultTags::code_include
   = PairTag {
-      SingleTag{openTagStart, "include", ""},
-      SingleTag{"", "include", CXTPL_TAG_CLOSING},
+      SingleTag{
+        {openTagStart},
+        "include",
+        {""}},
+      SingleTag{
+        {""},
+        "include",
+        {CXTPL_TAG_CLOSING}},
       &code_include_cb
     };
 } // namespace defaults

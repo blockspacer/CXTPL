@@ -14,9 +14,9 @@ typedef std::function<
   std::string&, const std::string&, const std::string&)> tag_callback;
 
 struct SingleTag {
-  const char* opening;
+  std::vector<const char*> opening;
   const char* attrs;
-  const char* closing;
+  std::vector<const char*> closing;
 };
 
 struct PairTag {

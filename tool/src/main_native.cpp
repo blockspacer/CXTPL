@@ -431,7 +431,8 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
       if (rc < 0) {
         XLOG(ERR) << "Read error=" << rc;
         in_file.reset();
-        break;
+        //break;
+        std::terminate(); /// TODO: gracefull_shutdown
       } else if (rc == 0) {
         // done
         in_file.reset();
@@ -447,7 +448,8 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
     DCHECK(CPU_executor) << "invalid CPU_executor";
     //std::terminate(); // TODO: gracefull_shutdown
     //CPU_executor->stop();
-    return;
+    //return;
+    std::terminate(); /// TODO: gracefull_shutdown
   }
 
   if(buf.empty() || buf.front()->empty()) {
@@ -473,7 +475,8 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
     if(genResult.error().ec == GeneratorError::EMPTY_INPUT) {
       ///\note assume not error, just empty file
       XLOG(WARNING) << "WARNING: empty string as Generator input";
-      return;
+      //return;
+      std::terminate(); /// TODO: gracefull_shutdown
     } else {
       XLOG(ERR) << "=== ERROR START ===";
       XLOG(ERR) << "ERROR message: " <<
@@ -491,7 +494,8 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
       //std::terminate(); // TODO: gracefull_shutdown
       //CPU_executor->stop();
       DCHECK(CPU_executor) << "invalid CPU_executor";
-      return;
+      //return;
+      std::terminate(); /// TODO: gracefull_shutdown
     }
   }
 
@@ -515,7 +519,8 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
       //std::terminate(); // TODO: gracefull_shutdown
       //CPU_executor->stop();
       DCHECK(CPU_executor) << "invalid CPU_executor";
-      return;
+      //return;
+      std::terminate(); /// TODO: gracefull_shutdown
     }
     XLOG(DBG6) << "Wrote " << genResult.value().size() << " bytes to file " << out_abs_path;
   } catch (const std::system_error& ex) {
@@ -524,7 +529,8 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
     //std::terminate(); // TODO: gracefull_shutdown
     //CPU_executor->stop();
     DCHECK(CPU_executor) << "invalid CPU_executor";
-    return;
+    //return;
+    std::terminate(); /// TODO: gracefull_shutdown
   }
 }
 
@@ -614,7 +620,7 @@ static void run_generation() {
           XLOG(ERR) << "All tasks for file generation timed out after task"
             << " (" << in_path << " -> "  << out_path << ") "
             << "timed out in : " << tout.count() << " milliseconds";
-          //std::terminate(); // TODO: gracefull_shutdown
+          std::terminate(); /// TODO: gracefull_shutdown
           //CPU_executor->stop();
         }
       );
