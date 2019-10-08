@@ -89,6 +89,7 @@ You need to `#include` all headers used by template generator in your app code. 
 - `[[~]]` means `start execution of C++ code while parsing template`. Requires newline (`\n`) as closing tag.
 - `[[+` means `add result of execution of C++ code to output while parsing template`. Result must be string. Requires `+]]` as closing tag.
 - `[[*` means `add result of execution of C++ code to output while parsing template`. Result will be converted to string (just wrapped in std::to_string). Requires `*]]` as closing tag.
+- `[[include file/path/here include]]` - include some `.cxtpl` file inside another `.cxtpl` file
 
 Example before template parsing/transpiling:
 

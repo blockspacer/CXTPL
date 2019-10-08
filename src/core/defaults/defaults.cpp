@@ -169,9 +169,14 @@ static outcome::result<
   // removing only leading & trailing spaces/tabs/etc.
   trim(cleanPath);
 
-  const auto file_contents = read_file(cleanPath)
-    // skip BOM
-    .substr(3);
+  /*std::cout << "code_include_cb: cleanPath = "
+    << cleanPath << std::endl;*/
+
+  const auto file_contents = read_file(cleanPath);
+
+  /*std::cout << "code_include_cb: file_contents = "
+    << file_contents << std::endl;*/
+
   if(file_contents.empty()) {
 #ifdef CXTPL_ENABLE_FOLLY
     XLOG(WARN) << "(CXTPL) Empty file " << cleanPath;
@@ -181,13 +186,25 @@ static outcome::result<
       "(CXTPL) Empty file " + cleanPath};
   }
 
+  std::string clean_contents =
+          file_contents
+          /// \note save in UTF without BOM
+          /*// skip BOM
+          .substr(4)*/
+          ;
+
+  /*std::cout << "code_include_cb: clean_contents = "
+    << clean_contents << std::endl;*/
+
   CXTPL::core::Generator template_engine;
 
   const outcome::result
     <std::string,
      CXTPL::core::errors::GeneratorErrorExtraInfo>
     genResult
-      = template_engine.generate(file_contents.c_str());
+      = template_engine.generate(
+          clean_contents
+          .c_str());
 
   std::string genResultStr = OUTCOME_TRYX(genResult);
 
@@ -200,8 +217,11 @@ static outcome::result<
       "(CXTPL) Empty generator output from file " + cleanPath};
   }
 
-  result += CXTPL::cpp_codegen::CodeGenerator::
-    executeCodeMultiline(genResultStr, outVarName);
+  /*std::cout << "code_include_cb: genResultStr = "
+    << genResultStr << std::endl;*/
+
+  result += genResultStr;
+
   return outcome::success();
 }
 
