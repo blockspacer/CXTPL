@@ -15,6 +15,23 @@
 
 #include "codegen/cpp/cpp_codegen.hpp"
 
+#include "base/bind.h"
+#include "base/compiler_specific.h"
+#include "base/location.h"
+#include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/i18n/case_conversion.h"
+#include "base/i18n/i18n_constants.h"
+#include "base/i18n/icu_string_conversions.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
+#include "third_party/icu/source/common/unicode/ucnv.h"
+
 // __has_include is currently supported by GCC and Clang. However GCC 4.9 may have issues and
 // returns 1 for 'defined( __has_include )', while '__has_include' is actually not supported:
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=63662
@@ -32,15 +49,21 @@ namespace fs = std::experimental::filesystem;
 
 namespace {
 
+// TODO: move fs to separate file https://github.com/jonathan-lemos/CloudSync/blob/165e93f2cc5e77b9e95615a91876c03a8cbd7114/fs/file.cpp
 #ifdef CXTPL_ENABLE_FOLLY
 static std::string read_file(const std::string& in_path) {
   folly::IOBufQueue buf;
   try {
     const fs::path in_abs_path = fs::absolute(in_path);
     XLOG(DBG9) << "(CXTPL) started reading file " << in_abs_path;
-    if(!fs::exists(in_abs_path) || !fs::is_regular_file(in_abs_path)) {
-        XLOG(ERR) << "(CXTPL) Can't find file " << in_abs_path;
-        return "";
+    try {
+      if(!fs::exists(in_abs_path) || !fs::is_regular_file(in_abs_path)) {
+          XLOG(ERR) << "(CXTPL) Can't find file " << in_abs_path;
+          return "";
+      }
+    } catch (fs::filesystem_error& e) {
+      XLOG(ERR) << "Failed to determine if \""
+        << in_abs_path << "\" is a file" << e.what();
     }
     auto in_file = std::make_unique<folly::File>(in_abs_path);
     while (in_file) {
@@ -81,8 +104,14 @@ static std::string read_file(const std::string& in_path) {
 #else
 static std::string read_file(const std::string& file_path) {
   const fs::path in_abs_path = fs::absolute(file_path);
-  if(!fs::exists(in_abs_path) || !fs::is_regular_file(in_abs_path)) {
-      return "";
+  try {
+    if(!fs::exists(in_abs_path) || !fs::is_regular_file(in_abs_path)) {
+        return "";
+    }
+  } catch (fs::filesystem_error& e) {
+    //std::cerr << "Failed to determine if \""
+    //  << in_abs_path << "\" is a file" << e.what();
+    return "";
   }
   std::ifstream file_stream(file_path, std::ios::binary);
   if(!file_stream.is_open()) {
@@ -94,26 +123,6 @@ static std::string read_file(const std::string& file_path) {
                      std::istreambuf_iterator<char>());
 }
 #endif // CXTPL_ENABLE_FOLLY
-
-// trim from left
-inline std::string& ltrim(std::string& s, const char* t = " \t\n\r\f\v")
-{
-    s.erase(0, s.find_first_not_of(t));
-    return s;
-}
-
-// trim from right
-inline std::string& rtrim(std::string& s, const char* t = " \t\n\r\f\v")
-{
-    s.erase(s.find_last_not_of(t) + 1);
-    return s;
-}
-
-// trim from left & right
-inline std::string& trim(std::string& s, const char* t = " \t\n\r\f\v")
-{
-    return ltrim(rtrim(s, t), t);
-}
 
 static outcome::result<
   void, CXTPL::core::errors::GeneratorErrorExtraInfo>
@@ -165,9 +174,9 @@ static outcome::result<
       const std::string& filePathBetweenTags,
       const std::string& outVarName)
 {
-  std::string cleanPath = filePathBetweenTags;
+  std::string cleanPath;
   // removing only leading & trailing spaces/tabs/etc.
-  trim(cleanPath);
+  base::TrimString(filePathBetweenTags, " \t\n\r\f\v", &cleanPath);
 
   /*std::cout << "code_include_cb: cleanPath = "
     << cleanPath << std::endl;*/
@@ -186,6 +195,13 @@ static outcome::result<
       "(CXTPL) Empty file " + cleanPath};
   }
 
+  base::string16 clean_contents;
+  CXTPL::core::defaults::ConvertResponseToUTF16(
+    /* unknown encoding */ "",
+    file_contents,
+    &clean_contents);
+
+#if 0
   /// \todo detect BOM https://www.puredevsoftware.com/blog/2017/11/17/text-encoding/
   std::string clean_contents =
           file_contents
@@ -193,6 +209,7 @@ static outcome::result<
           /*// skip BOM
           .substr(4)*/
           ;
+#endif
 
   /*std::cout << "code_include_cb: clean_contents = "
     << clean_contents << std::endl;*/
@@ -203,9 +220,8 @@ static outcome::result<
     <std::string,
      CXTPL::core::errors::GeneratorErrorExtraInfo>
     genResult
-      = template_engine.generate(
-          clean_contents
-          .c_str());
+      = template_engine.generate_from_UTF16(
+          clean_contents);
 
   std::string genResultStr = OUTCOME_TRYX(genResult);
 
@@ -308,8 +324,60 @@ const PairTag DefaultTags::code_include
         {""},
         "include",
         {CXTPL_TAG_CLOSING}},
-      &code_include_cb
-    };
+    &code_include_cb
+};
+
+
+struct BomMapping {
+  base::StringPiece prefix;
+  const char* charset;
+};
+
+// from https://github.com/blockspacer/skia-opengl-emscripten/blob/15d1ed4b15a5f53c4aa0af40ff92a075ac551a3c/src/chromium/net/proxy_resolution/pac_file_fetcher_impl.cc#L69
+const BomMapping kBomMappings[] = {
+    {"\xFE\xFF", "utf-16be"},
+    {"\xFF\xFE", "utf-16le"},
+    {"\xEF\xBB\xBF", "utf-8"},
+};
+
+bool ConvertToUTF16WithSubstitutions(base::StringPiece text,
+                                     const char* charset,
+                                     base::string16* output) {
+  return base::CodepageToUTF16(
+      text, charset, base::OnStringConversionError::SUBSTITUTE, output);
+}
+
+// Converts |bytes| (which is encoded by |charset|) to UTF16, saving the resul
+// to |*utf16|.
+// If |charset| is empty, then we don't know what it was and guess.
+void ConvertResponseToUTF16(const std::string& charset,
+                            const std::string& bytes,
+                            base::string16* utf16) {
+  if (charset.empty()) {
+    // Guess the charset by looking at the BOM.
+    base::StringPiece bytes_str(bytes);
+    for (const auto& bom : kBomMappings) {
+      if (bytes_str.starts_with(bom.prefix)) {
+        std::cout << "detected charset "
+          << bom.prefix << " " << bom.charset << std::endl;
+        return ConvertResponseToUTF16(
+            bom.charset,
+            // Strip the BOM in the converted response.
+            bytes.substr(bom.prefix.size()), utf16);
+      }
+    }
+
+    // Otherwise assume ISO-8859-1 if no charset was specified.
+    return ConvertResponseToUTF16(base::kCodepageLatin1, bytes, utf16);
+  }
+
+  DCHECK(!charset.empty());
+
+  // Be generous in the conversion -- if any characters lie outside of |charset|
+  // (i.e. invalid), then substitute them with U+FFFD rather than failing.
+  ConvertToUTF16WithSubstitutions(bytes, charset.c_str(), utf16);
+}
+
 } // namespace defaults
 
 } // namespace core

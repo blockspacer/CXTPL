@@ -50,4 +50,23 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/includes/version.hpp.in
 set_source_files_properties(${PROJECT_BINARY_DIR}/version.hpp
   PROPERTIES GENERATED 1)
 
+get_target_property(CXTPL_tool_RUNTIME_FILES_DIRECTORY CXTPL_tool
+                    RUNTIME_OUTPUT_DIRECTORY)
+
+add_custom_target(CXTPL_tool-copy-runtime-files ALL
+                  COMMAND cmake
+                          -E
+                          copy
+                          ${CMAKE_CURRENT_SOURCE_DIR}/resources/icu/CXTPL_icudtl.dat
+                          ${CXTPL_tool_RUNTIME_FILES_DIRECTORY}/CXTPL_icudtl.dat)
+
+add_dependencies(CXTPL_tool CXTPL_tool-copy-runtime-files)
+
 install(TARGETS CXTPL_tool DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
+
+install(
+  DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources/icu/" # source directory
+  DESTINATION "${CMAKE_INSTALL_PREFIX}/bin" # target directory
+  FILES_MATCHING # install only matched files
+  PATTERN "*.dat"
+  PATTERN "TODO" EXCLUDE)

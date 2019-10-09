@@ -18,6 +18,8 @@
 #include "core/tags.hpp"
 #include "core/errors/errors.hpp"
 
+#include "base/strings/string_util.h"
+
 namespace CXTPL {
 
 namespace core {
@@ -58,7 +60,7 @@ class Generator {
   };
 
   struct EncloseTagResult {
-    std::string tagCode;
+    base::string16 tagCode;
   };
 
 #if defined CXTPL_FS
@@ -67,7 +69,10 @@ class Generator {
 #endif
 
   /// \brief used to generate C++ code from template string
-  outcome::result<std::string, errors::GeneratorErrorExtraInfo> generate(const char* template_source) noexcept;
+  outcome::result<std::string, errors::GeneratorErrorExtraInfo> generate_from_ASCII(const char* template_source) noexcept;
+
+  /// \brief used to generate C++ code from template string
+  outcome::result<std::string, errors::GeneratorErrorExtraInfo> generate_from_UTF16(base::StringPiece16 template_source) noexcept;
 
   /// \brief used to modify parser tags
   GeneratorTags& supported_tags() noexcept;
@@ -78,15 +83,15 @@ class Generator {
  private:
   /// \brief will be called when we found `openTagStart`
   outcome::result<void, errors::GeneratorErrorExtraInfo> handleTagStart(
-    std::string_view& str, Generator::Position& pos, std::string& resultStr);
+    base::string16& str, Generator::Position& pos, std::string& resultStr);
 
   /// \brief will be called when we found supported tag after `openTagStart`
   outcome::result<void, errors::GeneratorErrorExtraInfo> handleTag(
-      std::string_view& str, const PairTag& tag,
+      base::string16& str, const PairTag& tag,
       Generator::Position& curPos, std::string& resultStr);
 
   outcome::result<EncloseTagResult, errors::GeneratorErrorExtraInfo> encloseTag(
-      std::string_view& processStr, Generator::Position& curPos,
+      base::string16& processStr, Generator::Position& curPos,
       const std::string& startTag, const std::string& closeTag);
 
   outcome::result<std::string, errors::GeneratorErrorExtraInfo>
@@ -96,7 +101,7 @@ class Generator {
   GeneratorTags GeneratorTags_;
 
   ///\note used only for debug output
-  std::string_view original_str;
+  base::string16 original_str;
 };
 
 } // namespace core

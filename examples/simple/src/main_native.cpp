@@ -8,6 +8,10 @@
 #include <memory>
 #include <vector>
 
+#include "base/strings/string16.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+
 // __has_include is currently supported by GCC and Clang. However GCC 4.9 may have issues and
 // returns 1 for 'defined( __has_include )', while '__has_include' is actually not supported:
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=63662
@@ -185,8 +189,16 @@ concrete[[~]] /* no newline */
 
     )raw";
 
-  const outcome::result<std::string, GeneratorErrorExtraInfo> genResult
-    = template_engine.generate(input.c_str());
+  base::string16 clean_contents;
+  CXTPL::core::defaults::ConvertResponseToUTF16(
+    /* unknown encoding */ "",
+    input,
+    &clean_contents);
+
+  const outcome::result<std::string, GeneratorErrorExtraInfo>
+    genResult
+      = template_engine.generate_from_UTF16(
+          clean_contents);
 
   auto chrono_then = std::chrono::steady_clock::now();
   long int diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(

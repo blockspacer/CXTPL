@@ -2,6 +2,9 @@
 
 #include "core/tags.hpp"
 
+#include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
+
 /// \note may be platform dependant ("\r", "\t", "\n", ...)
 #define CXTPL_NEWLINE "\n"
 
@@ -13,6 +16,17 @@ namespace CXTPL {
 namespace core {
 
 namespace defaults {
+
+bool ConvertToUTF16WithSubstitutions(base::StringPiece text,
+                                     const char* charset,
+                                     base::string16* output);
+
+// Converts |bytes| (which is encoded by |charset|) to UTF16, saving the resul
+// to |*utf16|.
+// If |charset| is empty, then we don't know what it was and guess.
+void ConvertResponseToUTF16(const std::string& charset,
+                            const std::string& bytes,
+                            base::string16* utf16);
 
 struct DefaultTags {
   static const char* openTagStart;
