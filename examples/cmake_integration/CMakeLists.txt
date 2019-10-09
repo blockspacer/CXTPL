@@ -101,9 +101,11 @@ add_dependencies(${OUT_TARGET_NAME} CXTPL_tool)
 get_target_property(${OUT_TARGET_NAME}_RUNTIME_FILES_DIRECTORY ${OUT_TARGET_NAME}
                     RUNTIME_OUTPUT_DIRECTORY)
 
-add_custom_target(copy-runtime-files ALL
+add_custom_target(${OUT_TARGET_NAME}-copy-runtime-files ALL
                   COMMAND cmake
                           -E
                           copy_directory
                           ${CMAKE_CURRENT_SOURCE_DIR}/appdata
                           ${${OUT_TARGET_NAME}_RUNTIME_FILES_DIRECTORY}/appdata)
+
+add_dependencies(${OUT_TARGET_NAME} ${OUT_TARGET_NAME}-copy-runtime-files)
