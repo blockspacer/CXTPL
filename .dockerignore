@@ -7,7 +7,6 @@
 **/.dockerignore
 **/.vagrant
 **/.travis.yml
-**/third_party/*
 **/build/*
 **/*-build
 **/build-*
@@ -16,6 +15,8 @@
 !submodules/folly/**/build/*
 !submodules/folly/build/
 !submodules/folly/build/*
+!third_party/chromium/**/build
+!third_party/chromium/**/build/*
 **/bin/*
 **/node_modules
 **/tmp
