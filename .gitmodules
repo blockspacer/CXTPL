@@ -62,3 +62,6 @@
 [submodule "third_party/chromium/build"]
 	path = third_party/chromium/build
 	url = https://github.com/blockspacer/chromium_build_config.git
+[submodule "third_party/chromium/tcmalloc_wrapper/build"]
+	path = third_party/chromium/tcmalloc_wrapper/build
+	url = https://github.com/blockspacer/chromium_build_config.git
