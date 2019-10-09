@@ -8,6 +8,8 @@
 #include <memory>
 #include <vector>
 
+#include <gsl/gsl_util>
+
 // __has_include is currently supported by GCC and Clang. However GCC 4.9 may have issues and
 // returns 1 for 'defined( __has_include )', while '__has_include' is actually not supported:
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=63662
@@ -77,12 +79,17 @@
 #include <folly/portability/GFlags.h>
 #include <folly/ssl/Init.h>
 
+#include "base/i18n/icu_util.h"
+
 #include <glog/logging.h>
 
 #if FOLLY_USE_SYMBOLIZER
 #include <folly/experimental/symbolizer/SignalHandler.h> // @manual
 #endif
 #include <folly/portability/GFlags.h>
+
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 
 // boost log or
 // #include <glog/logging.h>
@@ -421,6 +428,9 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
 
   folly::IOBufQueue buf;
   try {
+    auto cleanup = gsl::finally([prevPath = fs::current_path()] {
+        fs::current_path(prevPath);
+    });
     fs::current_path(fs::absolute(srcdir_abs_path));
     const fs::path in_abs_path = fs::absolute(in_path);
     XLOG(DBG9) << "started reading file " << in_abs_path;
@@ -463,21 +473,30 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
     return out;
   };
 
-  const std::string input = queueToString(buf);
-  XLOG(DBG9) << "input file contents" << input;
+  const std::string file_contents = queueToString(buf);
+  XLOG(DBG9) << "input file contents" << file_contents;
 
   CXTPL::core::Generator template_engine;
 
-  const outcome::result<std::string, GeneratorErrorExtraInfo> genResult
-    = template_engine.generate(input.c_str());
+  base::string16 clean_contents;
+  CXTPL::core::defaults::ConvertResponseToUTF16(
+    /* unknown encoding */ "",
+    file_contents,
+    &clean_contents);
+
+  const outcome::result<std::string, GeneratorErrorExtraInfo>
+    genResult
+      = template_engine.generate_from_UTF16(
+        clean_contents);
 
   if(genResult.has_error()) {
-    if(genResult.error().ec == GeneratorError::EMPTY_INPUT) {
+    /*if(genResult.error().ec == GeneratorError::EMPTY_INPUT) {
       ///\note assume not error, just empty file
-      XLOG(WARNING) << "WARNING: empty string as Generator input";
+      XLOG(WARNING) << "WARNING: empty string as Generator input: "
+        << genResult.error().extra_info;
       //return;
       std::terminate(); /// TODO: gracefull_shutdown
-    } else {
+    } else */{
       XLOG(ERR) << "=== ERROR START ===";
       XLOG(ERR) << "ERROR message: " <<
         make_error_code(genResult.error().ec).message();
@@ -487,7 +506,7 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
         " " << genResult.error().extra_info;
       XLOG(ERR) << "input data: "
         /// \note limit to first 200 symbols
-        << input.substr(0, std::min(200UL, input.size()))
+        << file_contents.substr(0, std::min(200UL, file_contents.size()))
         << "...";
       // TODO: file path here
       XLOG(ERR) << "=== ERROR END ===";
@@ -511,7 +530,11 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
 
   // see folly/io/async/AsyncPipe.cpp#L223
   try {
+    auto cleanup = gsl::finally([prevPath = fs::current_path()] {
+        fs::current_path(prevPath);
+    });
     fs::current_path(fs::absolute(resdir_abs_path));
+
     const fs::path out_abs_path = fs::absolute(out_path);
     XLOG(DBG9) << "started writing into file " << out_abs_path;
     if(!atomicallyWriteFileToDisk(genResult.value(), out_abs_path)) {
@@ -649,6 +672,8 @@ int main(int argc, char* argv[]) {
     const char* global_timeout_arg_name = "global_timeout_ms,G";
     const char* single_task_timeout_arg_name = "single_task_timeout_ms,T";
 
+    // TODO: --watch arg https://github.com/blockspacer/skia-opengl-emscripten/blob/bb16ab108bc4018890f4ff3179250b76c0d9053b/src/chromium/net/dns/dns_config_service_posix.cc#L279
+
     po::options_description desc("Allowed options");
 
     int single_task_timeout_arg;
@@ -768,6 +793,16 @@ int main(int argc, char* argv[]) {
     XLOG(ERR) << "ERROR: Exception of unknown type!";
     return EXIT_FAILURE;
   }
+
+#ifdef HAS_ICU
+  XLOG(DBG9) << "called base::i18n::InitializeICU";
+  bool icu_initialized = base::i18n::InitializeICU();
+#if defined(OS_EMSCRIPTEN)
+  if(!icu_initialized) {
+    DCHECK(false);
+  }
+#endif // OS_EMSCRIPTEN
+#endif // HAS_ICU
 
   srcdir_abs_path = fs::absolute(fs::current_path());
   if(srcdir_arg.is_initialized() && !srcdir_arg.value().empty()) {
