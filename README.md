@@ -560,6 +560,28 @@ There is an official Visual Studio extension, details of which can be found [her
 
 Follow CMake StyleGuide https://github.com/ruslo/0
 
+## LICENSE for open source components
+
+All the open source components are used under their associated open source licences.
+
+Used open source components:
+* icu
+* ced
+* boost
+* harfbuzz
+* boost.outcome
+* chromium (base)
+* libevent
+* modp_b64
+* tcmalloc
+* xdg_mime
+* xdg_user_dirs
+* dynamic_annotations
+* (Facebook) Folly
+* (Microsoft) GSL
+
+See LICENSE files
+
 ## Similar projects
 
 - (compile-time) https://github.com/burner/sweet.hpp/tree/master/amber
