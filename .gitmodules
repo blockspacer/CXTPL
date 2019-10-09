@@ -65,3 +65,6 @@
 [submodule "third_party/chromium/tcmalloc_wrapper/build"]
 	path = third_party/chromium/tcmalloc_wrapper/build
 	url = https://github.com/blockspacer/chromium_build_config.git
+[submodule "third_party/chromium/third_party/ced/src"]
+	path = third_party/chromium/third_party/ced/src
+	url = https://chromium.googlesource.com/external/github.com/google/compact_enc_det.git
