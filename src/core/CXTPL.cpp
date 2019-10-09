@@ -44,15 +44,19 @@ static const std::pair<long long, long long>
 static const char highlight_fill_symbol = ' ';
 
 static long long getLineNum(
-    const base::string16& original_str, const Generator::Position& curPos) {
+    const base::string16& original_str,
+    const Generator::Position& curPos)
+{
   long long result;
   /// \note we count lines from 1
   result = 1 + std::count(original_str.begin(), original_str.end(), '\n');
   return result;
 }
 
-static base::string16 highlightTextPos(const base::string16& original_str,
-  const Generator::Position& curPos) {
+static base::string16 highlightTextPos(
+  const base::string16& original_str,
+  const Generator::Position& curPos)
+{
     base::string16 highlighted;
     highlighted += base::ASCIIToUTF16("\n");
     long long pos_index = std::min(
@@ -64,9 +68,10 @@ static base::string16 highlightTextPos(const base::string16& original_str,
       std::min(pos_index + highlight_visible_offset.second,
         static_cast<long long>(original_str.size()));
 
-    const base::string16 visible_original_start = original_str.substr(
-      static_cast<size_t>(start_highlight),
-      static_cast<size_t>(pos_index - start_highlight));
+    const base::string16 visible_original_start
+      = original_str.substr(
+        static_cast<size_t>(start_highlight),
+        static_cast<size_t>(pos_index - start_highlight));
     highlighted += visible_original_start;
 
     highlighted += base::ASCIIToUTF16("\n");
@@ -76,13 +81,15 @@ static base::string16 highlightTextPos(const base::string16& original_str,
     if(end_newline_pos == std::string::npos) {
       end_newline_pos = 0;
     }
-    const size_t columnNum = visible_original_start.size() - end_newline_pos;
+    const size_t columnNum
+      = visible_original_start.size() - end_newline_pos;
 
     long long lineNum
       = getLineNum(visible_original_start, curPos);
 
     const size_t fill_count = columnNum;
-    highlighted.insert(highlighted.end(), fill_count, highlight_fill_symbol);
+    highlighted.insert(highlighted.end(),
+      fill_count, highlight_fill_symbol);
     highlighted += base::ASCIIToUTF16("^<==[error here]");
     highlighted += base::ASCIIToUTF16("[line: ");
     highlighted += base::ASCIIToUTF16(std::to_string(lineNum));
@@ -112,7 +119,9 @@ static base::string16 highlightTextPos(const base::string16& original_str,
 
 struct ErrorDetails {
   static std::string UnknownTag(const base::string16& original_str,
-      const Generator::Position& curPos, const GeneratorTags& supported_tags) {
+      const Generator::Position& curPos,
+      const GeneratorTags& supported_tags)
+  {
     std::string error_details;
     error_details += "can`t find known tag after opening tag ";
     error_details += supported_tags.openTagStart;
@@ -123,8 +132,10 @@ struct ErrorDetails {
   }
 
   static std::string UnclosedTag(const base::string16& original_str,
-      const Generator::Position& curPos, const std::string& startTag,
-      const std::string& closeTag) {
+      const Generator::Position& curPos,
+      const std::string& startTag,
+      const std::string& closeTag)
+  {
     std::string error_details;
     error_details += "can`t find closing tag ";
     error_details += closeTag;
@@ -140,29 +151,45 @@ struct ErrorDetails {
 static std::string tag_attr_with_closing(const SingleTag& tag,
   const size_t closeIndex = 0)
 {
+  /// \todo support closeIndex != 0
+  DCHECK(closeIndex == 0);
+
   return std::string{tag.attrs} + tag.closing.at(closeIndex);
 }
 
 static std::string tag_to_string(const SingleTag& tag,
   const size_t openIndex = 0, const size_t closeIndex = 0)
 {
-  return std::string{tag.opening.at(openIndex)} + tag.attrs + tag.closing.at(closeIndex);
+  /// \todo support closeIndex != 0
+  DCHECK(closeIndex == 0);
+
+  return std::string{
+    tag.opening.at(openIndex)}
+    + tag.attrs
+    + tag.closing.at(closeIndex);
 }
 
-#if defined(TODO)//!defined(NDEBUG)
+#if !defined(NDEBUG)
 static outcome::result<void, GeneratorErrorExtraInfo>
     performDebugChecks(const GeneratorTags& supported_tags) {
+
+  CHECK(supported_tags.code_line.open_tag.opening.size() == 1);
+  CHECK(supported_tags.code_block.open_tag.opening.size() == 1);
+  CHECK(supported_tags.code_append_raw.open_tag.opening.size() == 1);
+  CHECK(supported_tags.code_append_as_string.open_tag.opening.size() == 1);
+  CHECK(supported_tags.code_include.open_tag.opening.size() == 1);
+
   bool isTagOpeningsValid =
-    supported_tags.code_line.open_tag.opening.size()
-      == supported_tags.openTagStart.size()
-    && supported_tags.code_block.open_tag.opening.size()
-      == supported_tags.openTagStart.size()
-    && supported_tags.code_append_raw.open_tag.opening.size()
-      == supported_tags.openTagStart.size()
-    && supported_tags.code_append_as_string.open_tag.opening.size()
-      == supported_tags.openTagStart.size()
-    && supported_tags.code_include.open_tag.opening.size()
-      == supported_tags.openTagStart.size();
+    supported_tags.code_line.open_tag.opening.at(0)
+      == supported_tags.openTagStart
+    && supported_tags.code_block.open_tag.opening.at(0)
+      == supported_tags.openTagStart
+    && supported_tags.code_append_raw.open_tag.opening.at(0)
+      == supported_tags.openTagStart
+    && supported_tags.code_append_as_string.open_tag.opening.at(0)
+      == supported_tags.openTagStart
+    && supported_tags.code_include.open_tag.opening.at(0)
+      == supported_tags.openTagStart;
 
   if(!isTagOpeningsValid) {
     std::string error_details;
@@ -207,14 +234,19 @@ GeneratorTags& Generator::supported_tags() noexcept
   return GeneratorTags_;
 }
 
-void Generator::set_supported_tags(const GeneratorTags& tags) noexcept {
+void Generator::set_supported_tags(
+  const GeneratorTags& tags) noexcept
+{
   GeneratorTags_ = tags;
 }
 
-outcome::result<Generator::EncloseTagResult, GeneratorErrorExtraInfo>
-  Generator::encloseTag(
-    base::string16& processStr, Generator::Position& curPos,
-    const std::string& startTag, const std::string& closeTag) {
+outcome::result<
+  Generator::EncloseTagResult,
+  GeneratorErrorExtraInfo>
+    Generator::encloseTag(
+      base::string16& processStr, Generator::Position& curPos,
+      const std::string& startTag, const std::string& closeTag)
+{
   std::string::size_type close_pos = processStr.find(
     base::ASCIIToUTF16(closeTag));
   base::string16 tagCode;
@@ -243,8 +275,9 @@ outcome::result<Generator::EncloseTagResult, GeneratorErrorExtraInfo>
 };
 
 outcome::result<std::string, GeneratorErrorExtraInfo>
-  Generator::generateFromString() {
-#if defined(TODO)//!defined(NDEBUG)
+  Generator::generateFromString()
+{
+#if !defined(NDEBUG)
   OUTCOME_TRY(performDebugChecks(supported_tags()));
 #endif
 
@@ -360,39 +393,46 @@ outcome::result<void, GeneratorErrorExtraInfo> Generator::handleTag(
 
 outcome::result<void, GeneratorErrorExtraInfo> Generator::
   handleTagStart(
-    base::string16& str, Generator::Position& curPos, std::string& resultStr) {
+    base::string16& str, Generator::Position& curPos,
+    std::string& resultStr)
+{
   PairTag found_tag;
 
   if(const auto prefix
-      = tag_attr_with_closing(supported_tags().code_line.open_tag);
+      = tag_attr_with_closing(
+          supported_tags().code_line.open_tag);
       base::StartsWith(str, base::ASCIIToUTF16(prefix),
         base::CompareCase::SENSITIVE)) {
     str = removePrefix( str, prefix, curPos );
     found_tag = supported_tags().code_line;
     return handleTag(str, found_tag, curPos, resultStr);
   } else if(const auto prefix
-      = tag_attr_with_closing(supported_tags().code_block.open_tag);
+      = tag_attr_with_closing(
+          supported_tags().code_block.open_tag);
       base::StartsWith(str, base::ASCIIToUTF16(prefix),
         base::CompareCase::SENSITIVE)) {
     str = removePrefix( str, prefix, curPos );
     found_tag = supported_tags().code_block;
     return handleTag(str, found_tag, curPos, resultStr);
   } else if(const auto prefix
-      = tag_attr_with_closing(supported_tags().code_append_raw.open_tag);
+      = tag_attr_with_closing(
+          supported_tags().code_append_raw.open_tag);
       base::StartsWith(str, base::ASCIIToUTF16(prefix),
         base::CompareCase::SENSITIVE)) {
     str = removePrefix( str, prefix, curPos );
     found_tag = supported_tags().code_append_raw;
     return handleTag(str, found_tag, curPos, resultStr);
   } else if(const auto prefix
-      = tag_attr_with_closing(supported_tags().code_append_as_string.open_tag);
+      = tag_attr_with_closing(
+          supported_tags().code_append_as_string.open_tag);
       base::StartsWith(str, base::ASCIIToUTF16(prefix),
         base::CompareCase::SENSITIVE)) {
     str = removePrefix( str, prefix, curPos );
     found_tag = supported_tags().code_append_as_string;
     return handleTag(str, found_tag, curPos, resultStr);
   } else if(const auto prefix
-      = tag_attr_with_closing(supported_tags().code_include.open_tag);
+      = tag_attr_with_closing(
+          supported_tags().code_include.open_tag);
       base::StartsWith(str, base::ASCIIToUTF16(prefix),
         base::CompareCase::SENSITIVE)) {
     str = removePrefix( str, prefix, curPos );
@@ -407,7 +447,8 @@ outcome::result<void, GeneratorErrorExtraInfo> Generator::
   error_details += " (" __FILE__ ")";
   return GeneratorErrorExtraInfo{
     GeneratorError::UNCLOSED_TAG,
-    ErrorDetails::UnknownTag(original_str, curPos, supported_tags())};
+    ErrorDetails::UnknownTag(original_str,
+      curPos, supported_tags())};
 }
 
 } // namespace core
