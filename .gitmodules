@@ -1,4 +1,4 @@
-[submodule "submodules/boost.outcome"]
+﻿[submodule "submodules/boost.outcome"]
 	path = submodules/boost.outcome
   url = http://github.com/ned14/outcome.git
 	branch = master
@@ -68,3 +68,6 @@
 [submodule "third_party/chromium/third_party/ced/src"]
 	path = third_party/chromium/third_party/ced/src
 	url = https://chromium.googlesource.com/external/github.com/google/compact_enc_det.git
+[submodule "third_party/chromium/third_party/skia/third_party/externals/harfbuzz"]
+path = third_party/chromium/third_party/skia/third_party/externals/harfbuzz
+	url = https://chromium.googlesource.com/external/github.com/harfbuzz/harfbuzz.git
