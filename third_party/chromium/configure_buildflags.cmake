@@ -228,42 +228,42 @@ if(NEED_GEN_BUILDFLAGS)
     ${BASE_DIR}/base/clang_coverage_buildflags.h COPYONLY)
 
   # https://github.com/stormcenter/QuicDemo/blob/master/app/src/main/jni/third_party/chromium/include/net/net_buildflags.h
-  configure_file(${CHROMIUM_DIR}/gpu_vulkan_buildflags.h.inc
-    ${CHROMIUM_DIR}/gpu/vulkan/buildflags.h COPYONLY)
-
-  configure_file(${CHROMIUM_DIR}/gnet_buildflags.h.inc
-    ${CHROMIUM_DIR}/net/net_buildflags.h COPYONLY)
-
-  configure_file(${CHROMIUM_DIR}/device_vr_buildflags.h.inc
-    ${CHROMIUM_DIR}/device/vr/buildflags/buildflags.h COPYONLY)
-
-  configure_file(${CHROMIUM_DIR}/ui_gl_buildflags.h.inc
-    ${CHROMIUM_DIR}/ui/gl/buildflags.h COPYONLY)
-
-  configure_file(${CHROMIUM_DIR}/ui_base_buildflags.h.inc
-    ${CHROMIUM_DIR}/ui/base/buildflags.h COPYONLY)
+  #configure_file(${CHROMIUM_DIR}/gpu_vulkan_buildflags.h.inc
+  #  ${CHROMIUM_DIR}/gpu/vulkan/buildflags.h COPYONLY)
+  #
+  #configure_file(${CHROMIUM_DIR}/gnet_buildflags.h.inc
+  #  ${CHROMIUM_DIR}/net/net_buildflags.h COPYONLY)
+  #
+  #configure_file(${CHROMIUM_DIR}/device_vr_buildflags.h.inc
+  #  ${CHROMIUM_DIR}/device/vr/buildflags/buildflags.h COPYONLY)
+  #
+  #configure_file(${CHROMIUM_DIR}/ui_gl_buildflags.h.inc
+  #  ${CHROMIUM_DIR}/ui/gl/buildflags.h COPYONLY)
+  #
+  #configure_file(${CHROMIUM_DIR}/ui_base_buildflags.h.inc
+  #  ${CHROMIUM_DIR}/ui/base/buildflags.h COPYONLY)
 
   # RAW_HEAP_SNAPSHOTS=$v8_enable_raw_heap_snapshots",
   # RCS_COUNT_EVERYTHING=$runtime_call_stats_count_everything",
-  configure_file(${CHROMIUM_DIR}/blink_renderer_platform_bindings_buildflags.h.inc
-    ${CHROMIUM_DIR}/third_party/blink/renderer/platform/bindings/buildflags.h COPYONLY)
+  #configure_file(${CHROMIUM_DIR}/blink_renderer_platform_bindings_buildflags.h.inc
+  #  ${CHROMIUM_DIR}/third_party/blink/renderer/platform/bindings/buildflags.h COPYONLY)
 
   #if(NOT EXISTS "${CHROMIUM_DIR}/third_party/blink/renderer/platform/bindings/buildflags.h")
   #  message(FATAL_ERROR "can`t configure ${CHROMIUM_DIR}/third_party/blink/renderer/platform/bindings/buildflags.h")
   #endif()
 
   # BLINK_HEAP_VERIFICATION
-  configure_file(${CHROMIUM_DIR}/blink_renderer_platform_heap_buildflags.h.inc
-    ${CHROMIUM_DIR}/third_party/blink/renderer/platform/heap/heap_buildflags.h COPYONLY)
+  #configure_file(${CHROMIUM_DIR}/blink_renderer_platform_heap_buildflags.h.inc
+  #  ${CHROMIUM_DIR}/third_party/blink/renderer/platform/heap/heap_buildflags.h COPYONLY)
 
   # IS_CT_SUPPORTED
-  configure_file(${CHROMIUM_DIR}/network_service_buildflags.h.inc
-    ${CHROMIUM_DIR}/services/network/public/cpp/network_service_buildflags.h COPYONLY)
+  #configure_file(${CHROMIUM_DIR}/network_service_buildflags.h.inc
+  #  ${CHROMIUM_DIR}/services/network/public/cpp/network_service_buildflags.h COPYONLY)
 
   #define BUILDFLAG_INTERNAL_MOJO_TRACE_ENABLED() (0)
   #define BUILDFLAG_INTERNAL_MOJO_RANDOM_DELAYS_ENABLED() (0)
-  configure_file(${CHROMIUM_DIR}/mojo_buildflags.h.inc
-    ${CHROMIUM_DIR}/mojo/public/cpp/bindings/mojo_buildflags.h COPYONLY)
+  #configure_file(${CHROMIUM_DIR}/mojo_buildflags.h.inc
+  #  ${CHROMIUM_DIR}/mojo/public/cpp/bindings/mojo_buildflags.h COPYONLY)
 
   #define BUILDFLAG_INTERNAL_ALTERNATE_CDM_STORAGE_ID_KEY() ()
   #define BUILDFLAG_INTERNAL_ENABLE_AC3_EAC3_AUDIO_DEMUXING() (0)
@@ -285,8 +285,8 @@ if(NEED_GEN_BUILDFLAGS)
   #define BUILDFLAG_INTERNAL_ENABLE_MPEG_H_AUDIO_DEMUXING() (0)
   #define BUILDFLAG_INTERNAL_ENABLE_MSE_MPEG2TS_STREAM_PARSER() (0)
   #define BUILDFLAG_INTERNAL_USE_PROPRIETARY_CODECS() (0)
-  configure_file(${CHROMIUM_DIR}/media_buildflags.h.inc
-    ${CHROMIUM_DIR}/media/media_buildflags.h COPYONLY)
+  #configure_file(${CHROMIUM_DIR}/media_buildflags.h.inc
+  #  ${CHROMIUM_DIR}/media/media_buildflags.h COPYONLY)
 
   ## uses BUILDFLAG_INTERNAL_IPC_MESSAGE_LOG_ENABLED from ipc_buildflags.h
   #configure_file(${CHROMIUM_DIR}/gipc_buildflags.h.inc
@@ -294,9 +294,9 @@ if(NEED_GEN_BUILDFLAGS)
   #
 
   # USE_MPRIS
-  configure_file(${CHROMIUM_DIR}/mpris_buildflags.h.inc
-    ${CHROMIUM_DIR}/ui/base/mpris/buildflags/buildflags.h COPYONLY)
-
-  configure_file(${CHROMIUM_DIR}/ui_views_buildflags.h.inc
-    ${CHROMIUM_DIR}ui/views/buildflags.h COPYONLY)
+  #configure_file(${CHROMIUM_DIR}/mpris_buildflags.h.inc
+  #  ${CHROMIUM_DIR}/ui/base/mpris/buildflags/buildflags.h COPYONLY)
+  #
+  #configure_file(${CHROMIUM_DIR}/ui_views_buildflags.h.inc
+  #  ${CHROMIUM_DIR}ui/views/buildflags.h COPYONLY)
 endif(NEED_GEN_BUILDFLAGS)

@@ -6,6 +6,10 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(BASE_PARENT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/)
 set(BASE_DIR ${BASE_PARENT_DIR}base/)
 
+SET(BUILD_TOOLS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build")
+
+include(configure_buildflags.cmake)
+
 set(xdg_mime_PARENT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/base/third_party/)
 set(xdg_mime_DIR ${xdg_mime_PARENT_DIR}xdg_mime/)
 
