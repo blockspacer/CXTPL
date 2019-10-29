@@ -8,7 +8,6 @@
 #include <folly/io/IOBufQueue.h>
 #include <folly/FileUtil.h>
 #include <folly/File.h>
-#include <folly/logging/xlog.h>
 #endif // CXTPL_ENABLE_FOLLY
 
 #include <fstream>
