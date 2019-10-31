@@ -1,4 +1,6 @@
-﻿### --- base ---###
+﻿cmake_minimum_required(VERSION 3.4)
+
+### --- base ---###
 
 if(ENABLE_UKM)
   list(APPEND BASE_SOURCES
@@ -1388,10 +1390,50 @@ if(TARGET_EMSCRIPTEN)
     ${HARFBUZZ_LIBRARIES}
   )
 elseif(TARGET_LINUX)
+
+  # Check if libatomic is needed
+  include(GNUInstallDirs)
+  include(CMakePushCheckState)
+  include(CheckCXXCompilerFlag)
+  include(CheckCXXSourceCompiles)
+  include(CMakePackageConfigHelpers)
+  cmake_push_check_state()
+  check_cxx_source_compiles("
+      #include <atomic>
+      #include <stdint.h>
+      int main() {
+          std::atomic<int64_t> x;
+          x = 1;
+          x--;
+          return (int) x;
+      }"
+      atomic64)
+  #if(NOT atomic64)
+      find_library(ATOMIC NAMES atomic libatomic.so.1)
+      if(ATOMIC)
+          set(LIBATOMIC ${ATOMIC})
+          message(STATUS "Found libatomic: ${LIBATOMIC}")
+      else()
+          check_cxx_source_compiles("
+              #include <atomic>
+              #include <stdint.h>
+              int main() {
+                  std::atomic<int32_t> x;
+                  x = 1;
+                  x--;
+                  return (int) x;
+              }"
+              atomic32)
+
+          if(atomic32)
+              message(FATAL_ERROR "Failed to find libatomic!")
+          endif()
+      endif(ATOMIC)
+  #endif(NOT atomic64)
+  cmake_pop_check_state()
+
   list(APPEND EXTRA_CHROMIUM_BASE_LIBS
     tcmalloc
-    # TODO: find_package for atomic https://stackoverflow.com/questions/30591313/why-does-g-still-require-latomic
-    #atomic # from system, no dep
     ced
     ${CUSTOM_ICU_LIB}
     ${HARFBUZZ_LIBRARIES}
@@ -1401,7 +1443,6 @@ elseif(TARGET_LINUX)
   )
   add_dependencies(base
     tcmalloc
-    #atomic # from system, no dep
     ced
     ${CUSTOM_ICU_LIB}
     ${HARFBUZZ_LIBRARIES}
@@ -1444,6 +1485,7 @@ target_link_libraries(base PUBLIC
   ${STARBOARD_COMMON_LIB}
   modp_b64
   ${EXTRA_CHROMIUM_BASE_LIBS}
+  ${LIBATOMIC} # from system, no dep. for __atomic_is_lock_free
 )
 
 set_property(TARGET base PROPERTY CXX_STANDARD 17)
