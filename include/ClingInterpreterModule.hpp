@@ -47,7 +47,8 @@ public:
 
     void processCode(const std::string& code);
 
-private:
+public: // TODO
+//private:
 
     std::string id_;
     std::unique_ptr<cling::Interpreter> interpreter_;

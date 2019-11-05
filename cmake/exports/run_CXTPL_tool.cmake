@@ -12,12 +12,15 @@ message(STATUS "OUTPUTS_DIR
   (for ${CXTPL_tool_PROGRAM}) = ${OUTPUTS_DIR}")
 message(STATUS "GENERATOR_PATH
   (for ${CXTPL_tool_PROGRAM}) = ${GENERATOR_PATH}")
+message(STATUS "CXTPL_EXTRA_ARGS
+  (for ${CXTPL_tool_PROGRAM}) = ${CXTPL_EXTRA_ARGS}")
 
 message(
   STATUS "CXTPL_tool_LOG_CONFIG (for ${CXTPL_tool_PROGRAM}) = ${CXTPL_tool_LOG_CONFIG}")
 
 if(NOT ${GENERATOR_PATH} STREQUAL "")
-  set(CXTPL_GENERATOR "--generator_path ${GENERATOR_PATH}")
+  set(CXTPL_GENERATOR_ARG --generator_path)
+  set(CXTPL_GENERATOR_PATH ${GENERATOR_PATH})
 endif()
 
 message(STATUS "running CXTPL_tool command:
@@ -28,8 +31,11 @@ ${CXTPL_tool_PROGRAM} \
                         --output_files ${OUTPUTS} \
                         --srcdir ${INPUTS_DIR} \
                         --resdir ${OUTPUTS_DIR} \
-                        ${CXTPL_GENERATOR} \
+                        ${CXTPL_GENERATOR_ARG} ${CXTPL_GENERATOR_PATH} \
+                        ${CXTPL_EXTRA_ARGS} \
 ")
+
+string(REPLACE " " ";" CXTPL_EXTRA_ARGS_as_list "${CXTPL_EXTRA_ARGS}")
 
 execute_process(COMMAND ${CXTPL_tool_PROGRAM}
                         -L
@@ -44,7 +50,9 @@ execute_process(COMMAND ${CXTPL_tool_PROGRAM}
                         ${INPUTS_DIR}
                         --resdir
                         ${OUTPUTS_DIR}
-                        ${CXTPL_GENERATOR}
+                        ${CXTPL_GENERATOR_ARG}
+                        ${CXTPL_GENERATOR_PATH}
+                        ${CXTPL_EXTRA_ARGS_as_list}
                 TIMEOUT 7200 # sec
                 RESULT_VARIABLE retcode
                 ERROR_VARIABLE _ERROR_VARIABLE)

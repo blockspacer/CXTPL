@@ -41,10 +41,12 @@ if(CXTPL_tool)
       INPUTS_DIR
       OUTPUTS_DIR
       GENERATOR_PATH
+      LOG_CONFIG
     )
     list(APPEND multiValueArgs
       INPUTS
       OUTPUTS
+      EXTRA_ARGS
     )
     #
     cmake_parse_arguments(
@@ -55,6 +57,12 @@ if(CXTPL_tool)
       ${ARGN} # arguments of the function to parse, here we take the all original ones
     )
 
+    if(NOT ${ARGUMENTS_LOG_CONFIG} STREQUAL "")
+      string(REPLACE " " ";" LOG_CONFIG "${ARGUMENTS_LOG_CONFIG}")
+    else()
+      set(LOG_CONFIG ".:=DBG9:default:console\;default=file:path=CXTPL_tool_for_${ARGUMENTS_TARGET}.log,async=true,sync_level=DBG9\;console=stream:stream=stderr")
+    endif()
+
     if(NOT CXTPL_tool_PROGRAM)
       message(FATAL_ERROR "Program 'CXTPL_tool' not found, unable to run 'CXTPL_tool'.")
     endif(NOT CXTPL_tool_PROGRAM)
@@ -63,6 +71,8 @@ if(CXTPL_tool)
 
     string(REPLACE ";" " " INPUTS_as_string "${ARGUMENTS_INPUTS}")
     string(REPLACE ";" " " OUTPUTS_as_string "${ARGUMENTS_OUTPUTS}")
+    string(REPLACE ";" " " CXTPL_EXTRA_ARGS_as_string "${ARGUMENTS_EXTRA_ARGS}")
+
     # NOTE: regen files at configure step
     execute_process(
       COMMAND
@@ -71,10 +81,11 @@ if(CXTPL_tool)
         -DTHREADS=2
         -DINPUTS_DIR=${ARGUMENTS_INPUTS_DIR}
         -DOUTPUTS_DIR=${ARGUMENTS_OUTPUTS_DIR}
+        -DGENERATOR_PATH=${ARGUMENTS_GENERATOR_PATH}
         -DINPUTS=${INPUTS_as_string}
         -DOUTPUTS=${OUTPUTS_as_string}
-        -DGENERATOR_PATH=${ARGUMENTS_GENERATOR_PATH}
-        -DCXTPL_tool_LOG_CONFIG=.:=DBG9:default:console\;default=file:path=CXTPL_tool_for_${ARGUMENTS_TARGET}.log,async=true,sync_level=DBG9\;console=stream:stream=stderr
+        -DCXTPL_EXTRA_ARGS=${CXTPL_EXTRA_ARGS_as_string}
+        -DCXTPL_tool_LOG_CONFIG=${LOG_CONFIG}
         -P
         ${FindCXTPL_tool_LIST_DIR}/run_CXTPL_tool.cmake)
 
@@ -87,10 +98,11 @@ if(CXTPL_tool)
         -DTHREADS=2
         -DINPUTS_DIR=${ARGUMENTS_INPUTS_DIR}
         -DOUTPUTS_DIR=${ARGUMENTS_OUTPUTS_DIR}
+        -DGENERATOR_PATH=${ARGUMENTS_GENERATOR_PATH}
         -DINPUTS="${ARGUMENTS_INPUTS}"
         -DOUTPUTS="${ARGUMENTS_OUTPUTS}"
-        -DGENERATOR_PATH=${ARGUMENTS_GENERATOR_PATH}
-        -DCXTPL_tool_LOG_CONFIG=".:=DBG9:default:console\;default=file:path=CXTPL_tool_for_${ARGUMENTS_TARGET}.log,async=true,sync_level=DBG9\;console=stream:stream=stderr"
+        -DCXTPL_EXTRA_ARGS="${ARGUMENTS_EXTRA_ARGS}"
+        -DCXTPL_tool_LOG_CONFIG="${LOG_CONFIG}"
         -P
         ${FindCXTPL_tool_LIST_DIR}/run_CXTPL_tool.cmake)
 

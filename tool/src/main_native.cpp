@@ -127,8 +127,6 @@ static boost::optional<std::string> resdir_arg;
 
 static boost::optional<std::string> log_config;
 
-//static boost::optional<std::string> generator_arg;
-
 static boost::optional<std::string> generator_path_arg;
 
 static unsigned long threads_arg;
@@ -745,6 +743,15 @@ static void run_generation() {
   CPU_executor.reset();
 }
 
+static bool startsWith(const std::string& in, const std::string& prefix) {
+  return !in.compare(0, prefix.size(), prefix);
+};
+
+static std::string removePrefix(const std::string& from,
+    const std::string& prefix) {
+  return from.substr( prefix.size(), from.size() );
+};
+
 int main(int argc, char* argv[]) {
   try {
     const char* help_arg_name = "help";
@@ -757,7 +764,6 @@ int main(int argc, char* argv[]) {
     const char* log_arg_name = "log,L";
     const char* global_timeout_arg_name = "global_timeout_ms,G";
     const char* single_task_timeout_arg_name = "single_task_timeout_ms,T";
-    //const char* generator_arg_name = "generator";
     const char* generator_path_arg_name = "generator_path";
 
     // TODO: --watch arg https://github.com/blockspacer/skia-opengl-emscripten/blob/bb16ab108bc4018890f4ff3179250b76c0d9053b/src/chromium/net/dns/dns_config_service_posix.cc#L279
@@ -777,14 +783,16 @@ int main(int argc, char* argv[]) {
       (resdir_arg_name, po::value(&resdir_arg)->default_value(boost::none, ""), "change output directory path (where to place generated files)")
       (srcdir_arg_name, po::value(&srcdir_arg)->default_value(boost::none, ""), "change current working directory path (path to template files)")
       (in_arg_name, po::value(&in_args)->multitoken(), "list of template files that must be used for C++ code generation")
-      //(generator_arg_name, po::value(&generator_arg)->default_value(boost::none, ""), "generator name for code generation")
       (generator_path_arg_name, po::value(&generator_path_arg)->default_value(boost::none, ""), "path to generator C++ file")
       // TODO: outfile_pattern_name
       //(outfile_pattern_name, po::value(&outfile_pattern)->default_value("{out.dir}{in.filename}{in.ext}.cpp"), "output format")
       (out_arg_name, po::value(&out_args)->multitoken(), "list of C++ files that must be generated from templates");
 
     po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
+    auto parsed_options = po::command_line_parser(argc, argv).
+      options(desc).allow_unregistered().run();
+    po::store(parsed_options, vm);
+
     po::notify(vm);
 
     if(single_task_timeout_arg != 0) {
@@ -797,9 +805,45 @@ int main(int argc, char* argv[]) {
         std::chrono::milliseconds{global_timeout_arg};
     }
 
+    if(generator_path_arg.is_initialized()
+       && !generator_path_arg.value().empty()) {
+      /// \todo make Cling thread-safe
+      XLOG(WARNING) << "Disabled multithreading in CXTPL_tool due "
+                       "to argument: generator_path";
+      threads_arg = 1;
+    }
+
     /// \note no logging before Init!
     Init(argc, argv, log_config);
     XLOG(DBG9) << "Initialized CXTPL_tool";
+
+#if defined(CLING_IS_ON)
+    /// \note forward unregistered options to clang libtooling
+    for (const auto& o : parsed_options.options) {
+        if (vm.find(o.string_key) == vm.end()) {
+            // an unknown option
+            for(size_t i = 0; i < o.value.size(); i++) {
+                const std::string combined_for_clang
+                  = o.string_key + o.value[i];
+                XLOG(DBG9) << "forwarded unregistered option "
+                              "to cling: "
+                              << combined_for_clang;
+                if(combined_for_clang.empty()) {
+                  continue;
+                }
+                if(startsWith(combined_for_clang, "-extra-arg=")) {
+                  const std::string combined_for_cling
+                    = removePrefix(combined_for_clang, "-extra-arg=");
+                  if(combined_for_cling.empty()) {
+                    continue;
+                  }
+                  cling_utils::InterpreterModule::
+                    extra_args.push_back(combined_for_cling);
+                }
+            }
+        }
+    }
+#endif // CLING_IS_ON
 
     if (vm.count(help_arg_name)) {
       XLOG(INFO) << desc;
@@ -811,7 +855,8 @@ int main(int argc, char* argv[]) {
       return EXIT_SUCCESS;
     }
 
-    if(generator_path_arg.is_initialized() && !generator_path_arg.value().empty()) {
+    if(generator_path_arg.is_initialized()
+       && !generator_path_arg.value().empty()) {
   #if defined(CLING_IS_ON)
       generator_file_contents = readFile(generator_path_arg.value_or(""));
       XLOG(DBG9) << "generator file contents" << generator_file_contents;

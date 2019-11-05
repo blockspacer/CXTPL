@@ -52,12 +52,12 @@ void writeToFile(const std::string& str, const std::string& file_path) {
 void onBeforeTemplateGeneration(const std::string original_code,
   const std::string out_file)
 {
+  cxtpl_output = ""; ///\note clear old outputs
 }
 
 /// \note cxtpl_output is not empty here
 void onAfterTemplateGeneration(const std::string original_code,
   const std::string out_file)
 {
-  printf("onAfterTemplateGeneration %s\n", cxtpl_output.c_str());
   writeToFile(cxtpl_output, out_file);
 }

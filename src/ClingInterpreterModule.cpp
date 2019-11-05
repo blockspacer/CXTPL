@@ -48,6 +48,10 @@ void add_default_cling_args(std::vector<std::string> &args) {
     // https://stackoverflow.com/a/30877725
     args.push_back("-DBOOST_SYSTEM_NO_DEPRECATED");
     args.push_back("-DBOOST_ERROR_CODE_HEADER_ONLY");
+
+    for(const auto& it: InterpreterModule::extra_args) {
+      args.push_back(it);
+    }
 }
 
 void InterpreterModule::createInterpreter() {
