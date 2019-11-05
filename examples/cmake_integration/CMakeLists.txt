@@ -92,9 +92,12 @@ list(APPEND cxtpl_inputs "${cxtpl_in_dir}/example_includes.cxtpl")
 list(APPEND cxtpl_outputs "${cxtpl_out_dir}/example_includes.cxtpl.cpp")
 
 # create new codegen files for TARGET_NAME_HERE based on cxtpl_inputs and cxtpl_outputs
-target_add_cxtpl_tool(${OUT_TARGET_NAME} "cmake_integration"
-                      "${cxtpl_in_dir}" "${cxtpl_out_dir}"
-                      "${cxtpl_inputs}" "${cxtpl_outputs}")
+target_add_cxtpl_tool(TARGET ${OUT_TARGET_NAME}
+                      GUID "cmake_integration"
+                      INPUTS_DIR "${cxtpl_in_dir}"
+                      OUTPUTS_DIR "${cxtpl_out_dir}"
+                      INPUTS "${cxtpl_inputs}"
+                      OUTPUTS "${cxtpl_outputs}")
 
 add_dependencies(${OUT_TARGET_NAME} CXTPL_tool)
 

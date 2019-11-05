@@ -10,6 +10,14 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/build/") # for conan
 
+set(CLING_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cling-build/" CACHE STRING "CLING DIR")
+
+set(ENABLE_CLING FALSE CACHE BOOL "ENABLE_CLING")
+message(STATUS "ENABLE_CLING=${ENABLE_CLING}")
+
+set(INSTALL_CLING FALSE CACHE BOOL "INSTALL_CLING")
+message(STATUS "INSTALL_CLING=${INSTALL_CLING}")
+
 # Setup conan and include everything.
 #include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 #conan_basic_setup()
@@ -208,6 +216,75 @@ if(ENABLE_CHROMIUM_BASE)
   list(APPEND APP_DEFINITIONS USE_CUSTOM_ICU=1)
 endif(ENABLE_CHROMIUM_BASE)
 
+if(ENABLE_CLING)
+  list(APPEND CLING_TOOLS_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ClingInterpreterModule.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/ClingInterpreterModule.hpp
+  )
+  #
+  list(APPEND APP_DEFINITIONS CLING_IS_ON=1)
+  #
+  list(APPEND CLING_LIBS
+    # TODO: use FindClang.cmake
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangARCMigrate.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangAnalysis.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangAST.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangASTMatchers.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangBasic.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangCodeGen.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangDriver.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangDynamicASTMatchers.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangEdit.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangFormat.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangFrontend.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangFrontendTool.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangIndex.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangLex.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangParse.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangRewrite.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangRewriteFrontend.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangSema.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangSerialization.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangStaticAnalyzerCheckers.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangStaticAnalyzerCore.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangStaticAnalyzerFrontend.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangTooling.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangToolingCore.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangToolingRefactor.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangStaticAnalyzerCore.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangDynamicASTMatchers.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangCodeGen.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangFrontendTool.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclang.so
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangEdit.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangRewriteFrontend.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangDriver.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangSema.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangASTMatchers.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangSerialization.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangBasic.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangAST.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangTooling.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangStaticAnalyzerFrontend.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangFormat.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangToolingRefactor.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangLex.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangFrontend.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangRewrite.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangToolingCore.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangIndex.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangAnalysis.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangParse.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangStaticAnalyzerCheckers.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/libclangARCMigrate.a
+    #
+    Cling::Cling
+    Cling::ClingInterpreter
+    Cling::clingUtils
+    Cling::clingMetaProcessor
+  )
+endif(ENABLE_CLING)
+
 set(USED_SYSTEM_LIBS
     Threads::Threads # pthread, https://cmake.org/cmake/help/v3.13/module/FindThreads.html
     ${X11_LIBRARIES} # https://cmake.org/cmake/help/v3.13/module/FindX11.html
@@ -230,19 +307,22 @@ set(USED_BOOST_LIBS
     CACHE INTERNAL "USED_BOOST_LIBS")
 
 add_library(CXTPL_core STATIC
-            # sources
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/core/CXTPL.cpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/core/defaults/defaults.cpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/codegen/cpp/cpp_codegen.cpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/core/errors/errors_GeneratorError.cpp
-            # includes
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/CXTPL.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/defaults/defaults.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/tags.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/errors/errors.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/codegen/cpp/cpp_codegen.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/integrations/outcome/error_utils.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/integrations/outcome/error_macros.hpp)
+  # sources
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/CXTPL.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/defaults/defaults.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/codegen/cpp/cpp_codegen.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/errors/errors_GeneratorError.cpp
+  # includes
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/core/CXTPL.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/core/defaults/defaults.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/core/tags.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/core/errors/errors.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/codegen/cpp/cpp_codegen.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/integrations/outcome/error_utils.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/integrations/outcome/error_macros.hpp
+  #
+  ${CLING_TOOLS_SOURCES}
+)
 
 target_link_libraries(
   CXTPL_core
@@ -275,6 +355,7 @@ target_link_libraries(
          microsoft_gsl
          #${CONAN_LIBS}
          #CONAN_PKG::catch2
+         ${CLING_LIBS}
   )
 
 target_include_directories(
@@ -343,3 +424,64 @@ endif(ENABLE_TESTS)
 if(BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif(BUILD_EXAMPLES)
+
+if(ENABLE_CLING)
+  if(MSVC)
+    set_target_properties(CXTPL_core PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
+    set_property(
+      TARGET CXTPL_core
+      APPEND_STRING
+      PROPERTY LINK_FLAGS
+               "/EXPORT:?setValueNoAlloc@internal@runtime@cling@@YAXPEAX00D_K@Z
+                /EXPORT:?setValueNoAlloc@internal@runtime@cling@@YAXPEAX00DM@Z
+                /EXPORT:cling_runtime_internal_throwIfInvalidPointer")
+  endif()
+
+  target_compile_definitions(CXTPL_core PRIVATE CLING_IS_ON=1)
+endif(ENABLE_CLING)
+
+if(ENABLE_CLING AND INSTALL_CLING)
+  list(APPEND CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
+  install(
+    DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/cling-build/build/lib/" # source directory
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" # target directory
+    FILES_MATCHING # install only matched files
+    PATTERN "*.so"
+    PATTERN "*.so.*"
+    PATTERN "*.dll"
+    PATTERN "*.dll.*"
+    PATTERN "*.a"
+    PATTERN "*.lib"
+    PATTERN "CMake" EXCLUDE
+    PATTERN "cmake" EXCLUDE
+    PATTERN "CMakeFiles" EXCLUDE
+    PATTERN "ToolDrivers" EXCLUDE
+    PATTERN "ProfileData" EXCLUDE
+    PATTERN "Linker" EXCLUDE
+    PATTERN "LTO" EXCLUDE
+    PATTERN "IR" EXCLUDE
+    PATTERN "Option" EXCLUDE
+    PATTERN "ObjectYAML" EXCLUDE
+    PATTERN "DebugInfo" EXCLUDE
+    PATTERN "LineEditor" EXCLUDE
+    PATTERN "Target" EXCLUDE
+    PATTERN "Demangle" EXCLUDE
+    PATTERN "Passes" EXCLUDE
+    PATTERN "Object" EXCLUDE
+    PATTERN "XRay" EXCLUDE
+    PATTERN "Fuzzer" EXCLUDE
+    PATTERN "Support" EXCLUDE
+    PATTERN "Bitcode" EXCLUDE
+    PATTERN "CodeGen" EXCLUDE
+    PATTERN "MC" EXCLUDE
+    PATTERN "IRReader" EXCLUDE
+    PATTERN "TableGen" EXCLUDE
+    PATTERN "Analysis" EXCLUDE
+    PATTERN "Testing" EXCLUDE
+    PATTERN "AsmParser" EXCLUDE
+    PATTERN "clang" EXCLUDE
+    PATTERN "Transforms" EXCLUDE
+    PATTERN "BinaryFormat" EXCLUDE
+    PATTERN "ExecutionEngine" EXCLUDE)
+endif(ENABLE_CLING AND INSTALL_CLING)

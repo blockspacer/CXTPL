@@ -100,7 +100,11 @@ if(NOT TARGET Cling::clingUtils)
 endif()
 
 find_program(CLING_BIN cling
-             HINTS ${CLING_DIR}/build/bin/ ${CLING_PREFIX}/bin $PATH
+             HINTS ${CLING_DIR}/build/bin/
+                   ${CLING_PREFIX}/bin
+                   /usr/bin
+                   /usr/local/bin
+                   $PATH
                    CMAKE_SYSTEM_PROGRAM_PATH)
 
 if(NOT TARGET Cling::Cling)

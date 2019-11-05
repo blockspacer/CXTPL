@@ -392,7 +392,7 @@ echo "file1.cxtpl" >> build/file1.cxtpl
 echo "file2.cxtpl" >> build/file2.cxtpl
 echo "file3.cxtpl" >> build/file3.cxtpl
 echo "file4.cxtpl" >> build/file4.cxtpl
-cmake -E time ./build/tool/CXTPL_tool --threads 6 --input_files build/file1.cxtpl build/file2.cxtpl --output_files build/file1.cxtpl.generated.cpp build/file2.cxtpl.generated.cpp
+cmake -E time ./build/bin/CXTPL_tool --threads 6 --input_files build/file1.cxtpl build/file2.cxtpl --output_files build/file1.cxtpl.generated.cpp build/file2.cxtpl.generated.cpp
 ```
 
 ```bash
@@ -417,7 +417,7 @@ cmake -E time ./build/bin/CXTPL_examples_cmake_integration
 Number of input files must be equal to the number of output files. File order is important.
 
 ```bash
-./build/tool/CXTPL_tool --threads 6 --input_files build/file1.cxtpl build/file2.cxtpl build/file3.cxtpl build/file4.cxtpl --output_files build/file1.cxtpl.generated.cpp build/file2.cxtpl.generated.cpp build/file3.cxtpl.generated.cpp build/file4.cxtpl.generated.cpp -L ".=DBG9"
+./build/bin/CXTPL_tool --threads 6 --input_files build/file1.cxtpl build/file2.cxtpl build/file3.cxtpl build/file4.cxtpl --output_files build/file1.cxtpl.generated.cpp build/file2.cxtpl.generated.cpp build/file3.cxtpl.generated.cpp build/file4.cxtpl.generated.cpp -L ".=DBG9"
 ```
 
 `-L .=DBG9` is log configuration in format https://github.com/facebook/folly/blob/master/folly/logging/docs/Config.md
@@ -425,7 +425,7 @@ Number of input files must be equal to the number of output files. File order is
 Example of log configuration which writes both into the file and console stream:
 
 ```bash
-./build/tool/CXTPL_tool --threads 6 --input_files build/file1.cxtpl build/file2.cxtpl --output_files build/file1.cxtpl.generated.cpp build/file2.cxtpl.generated.cpp j -L ".:=INFO:default:console; default=file:path=y.log,async=true,sync_level=DBG9;console=stream:stream=stderr"
+./build/bin/CXTPL_tool --threads 6 --input_files build/file1.cxtpl build/file2.cxtpl --output_files build/file1.cxtpl.generated.cpp build/file2.cxtpl.generated.cpp j -L ".:=INFO:default:console; default=file:path=y.log,async=true,sync_level=DBG9;console=stream:stream=stderr"
 ```
 
 `--srcdir` to change current filesystem path for input files.
@@ -467,10 +467,8 @@ Macro `target_add_CXTPL_tool` will invoke `CXTPL_tool` on `TARGET_NAME_HERE`:
 ```bash
 find_package(CXTPL_tool REQUIRED)
 
-# create new codegen files for TARGET_NAME_HERE based on cxtpl_inputs and cxtpl_outputs
-target_add_CXTPL_tool(TARGET_NAME_HERE
-  "${cxtpl_in_dir}" "${cxtpl_out_dir}"
-  "${cxtpl_inputs}" "${cxtpl_outputs}")
+# Use `target_add_CXTPL_tool`
+# See examples
 ```
 
 See examples/cmake_integration
@@ -502,6 +500,43 @@ useful links:
 RTTI enabled only in command line tool (CXTPL_tool), RTTI required by boost.po.
 
 CXTPL library disabled RTTI and uses BOOST_NO_RTTI/BOOST_NO_TYPEID (as private cmake config).
+
+## How to build with support for custom generators (uses Cling)
+
+By default CXTPL outputs C++ code into `.cpp` files.
+
+You create custom generator to process C++ code produced by CXTPL.
+
+Using custom generator you can:
+
+- output any file format (for example: valid `.html` file).
+- add predefined variables.
+
+Generator path must be valid `.cpp` file that will be executed by Cling.
+
+You can set generator path via `--generator_path=YOUR_PATH_TO_CPP_FILE_HERE`
+
+Use `install_cling.sh` and build CXTPL with Cling support `-DENABLE_CLING=TRUE`.
+
+```bash
+# BEFORE install_cling.sh:
+sudo apt-get update && sudo apt-get upgrade
+sudo apt-get install clang-6.0 libstdc++6 libstdc++-6-dev
+sudo update-alternatives --config c++
+sudo update-alternatives --config cc
+sudo ldconfig
+export CC=clang-6.0
+export CXX=clang++-6.0
+```
+
+```bash
+# Build Cling into `cling-build` folder
+cd scripts
+bash install_cling.sh
+```
+
+NOTE:
+- Custom generators created for fast prototyping. You can create custom command-line tool (see sources of `CXTPL_tool`) to do more than custom generators and without Cling performance overhead. Chain outputs of tools like so: CXTPL outputs cpp files with result stored in C++ variable -> Custom tool outputs any file format based on result stored in C++ variable.
 
 ## ⭐️ How to Contribute
 

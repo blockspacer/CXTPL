@@ -12,6 +12,7 @@ set(FindCXTPL_tool_LIST_DIR
 option(CXTPL_tool "Enable CXTPL_tool." ON)
 
 if(CXTPL_tool)
+  include(CMakeParseArguments)
 
   # Check if CXTPL_tool is installed with find_program.
   find_program(CXTPL_tool_PROGRAM CXTPL_tool
@@ -31,51 +32,69 @@ if(CXTPL_tool)
   # makes this redundant, as it enables it for all targets already. This
   # could be used in combination with custom target commands or by
   # overriding the add_* commands with custom implementation.
-  function(target_add_CXTPL_tool
-           TARGET
-           GUID
-           INPUTS_DIR
-           OUTPUTS_DIR
-           INPUTS
-           OUTPUTS)
+  function(target_add_CXTPL_tool)
+    # see https://cliutils.gitlab.io/modern-cmake/chapters/basics/functions.html
+    set(options "")
+    list(APPEND oneValueArgs
+      TARGET
+      GUID
+      INPUTS_DIR
+      OUTPUTS_DIR
+      GENERATOR_PATH
+    )
+    list(APPEND multiValueArgs
+      INPUTS
+      OUTPUTS
+    )
+    #
+    cmake_parse_arguments(
+      ARGUMENTS # prefix of output variables
+      "${options}" # list of names of the boolean arguments (only defined ones will be true)
+      "${oneValueArgs}" # list of names of mono-valued arguments
+      "${multiValueArgs}" # list of names of multi-valued arguments (output variables are lists)
+      ${ARGN} # arguments of the function to parse, here we take the all original ones
+    )
+
     if(NOT CXTPL_tool_PROGRAM)
       message(FATAL_ERROR "Program 'CXTPL_tool' not found, unable to run 'CXTPL_tool'.")
     endif(NOT CXTPL_tool_PROGRAM)
 
-    set_source_files_properties(${OUTPUTS} PROPERTIES GENERATED TRUE)
+    set_source_files_properties(${ARGUMENTS_OUTPUTS} PROPERTIES GENERATED TRUE)
 
-    string(REPLACE ";" " " INPUTS_as_string "${INPUTS}")
-    string(REPLACE ";" " " OUTPUTS_as_string "${OUTPUTS}")
+    string(REPLACE ";" " " INPUTS_as_string "${ARGUMENTS_INPUTS}")
+    string(REPLACE ";" " " OUTPUTS_as_string "${ARGUMENTS_OUTPUTS}")
     # NOTE: regen files at configure step
     execute_process(
       COMMAND
         ${CMAKE_COMMAND}
         -DCXTPL_tool_PROGRAM=${CXTPL_tool_PROGRAM}
         -DTHREADS=2
-        -DINPUTS_DIR=${INPUTS_DIR}
-        -DOUTPUTS_DIR=${OUTPUTS_DIR}
+        -DINPUTS_DIR=${ARGUMENTS_INPUTS_DIR}
+        -DOUTPUTS_DIR=${ARGUMENTS_OUTPUTS_DIR}
         -DINPUTS=${INPUTS_as_string}
         -DOUTPUTS=${OUTPUTS_as_string}
-        -DCXTPL_tool_LOG_CONFIG=.:=DBG9:default:console\;default=file:path=CXTPL_tool_for_${TARGET}.log,async=true,sync_level=DBG9\;console=stream:stream=stderr
+        -DGENERATOR_PATH=${ARGUMENTS_GENERATOR_PATH}
+        -DCXTPL_tool_LOG_CONFIG=.:=DBG9:default:console\;default=file:path=CXTPL_tool_for_${ARGUMENTS_TARGET}.log,async=true,sync_level=DBG9\;console=stream:stream=stderr
         -P
         ${FindCXTPL_tool_LIST_DIR}/run_CXTPL_tool.cmake)
 
     # NOTE: regen files at build step
     add_custom_target(
-      CXTPL_tool_target_for_${TARGET}_${GUID} ALL
+      CXTPL_tool_target_for_${ARGUMENTS_TARGET}_${ARGUMENTS_GUID} ALL
       COMMAND
         ${CMAKE_COMMAND}
         -DCXTPL_tool_PROGRAM=${CXTPL_tool_PROGRAM}
         -DTHREADS=2
-        -DINPUTS_DIR=${INPUTS_DIR}
-        -DOUTPUTS_DIR=${OUTPUTS_DIR}
-        -DINPUTS="${INPUTS}"
-        -DOUTPUTS="${OUTPUTS}"
-        -DCXTPL_tool_LOG_CONFIG=".:=DBG9:default:console\;default=file:path=CXTPL_tool_for_${TARGET}.log,async=true,sync_level=DBG9\;console=stream:stream=stderr"
+        -DINPUTS_DIR=${ARGUMENTS_INPUTS_DIR}
+        -DOUTPUTS_DIR=${ARGUMENTS_OUTPUTS_DIR}
+        -DINPUTS="${ARGUMENTS_INPUTS}"
+        -DOUTPUTS="${ARGUMENTS_OUTPUTS}"
+        -DGENERATOR_PATH=${ARGUMENTS_GENERATOR_PATH}
+        -DCXTPL_tool_LOG_CONFIG=".:=DBG9:default:console\;default=file:path=CXTPL_tool_for_${ARGUMENTS_TARGET}.log,async=true,sync_level=DBG9\;console=stream:stream=stderr"
         -P
         ${FindCXTPL_tool_LIST_DIR}/run_CXTPL_tool.cmake)
 
-    add_dependencies(${TARGET} CXTPL_tool_target_for_${TARGET}_${GUID})
+    add_dependencies(${ARGUMENTS_TARGET} CXTPL_tool_target_for_${ARGUMENTS_TARGET}_${ARGUMENTS_GUID})
   endfunction(target_add_CXTPL_tool)
 
 endif(CXTPL_tool)

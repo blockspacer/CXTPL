@@ -101,6 +101,12 @@
 
 #include "version.hpp"
 
+#if defined(CLING_IS_ON)
+#include "ClingInterpreterModule.hpp"
+
+static std::string generator_file_contents;
+#endif //CLING_IS_ON
+
 namespace po = boost::program_options;
 
 #if __has_include(<filesystem>)
@@ -121,6 +127,10 @@ static boost::optional<std::string> resdir_arg;
 
 static boost::optional<std::string> log_config;
 
+//static boost::optional<std::string> generator_arg;
+
+static boost::optional<std::string> generator_path_arg;
+
 static unsigned long threads_arg;
 
 static fs::path srcdir_abs_path;
@@ -131,6 +141,10 @@ static boost::optional<std::chrono::milliseconds> single_task_timeout;
 
   /// \note summary timeout for all files in one CPU_executor
 static boost::optional<std::chrono::milliseconds> global_timeout;
+
+#if defined(CLING_IS_ON)
+std::unique_ptr<cling_utils::InterpreterModule> g_interp;
+#endif // CLING_IS_ON
 
 #if 0 // TODO: custom logger format
 namespace {
@@ -423,9 +437,7 @@ static std::shared_ptr<folly::CPUThreadPoolExecutor>
       std::make_shared<folly::NamedThreadFactory>(pool_name.data()));
 }
 
-static void processTemplate(const std::string& in_path, const std::string out_path) {
-  using namespace ::CXTPL::core::errors;
-
+static std::string readFile(const std::string& in_path) {
   folly::IOBufQueue buf;
   try {
     auto cleanup = gsl::finally([prevPath = fs::current_path()] {
@@ -455,7 +467,7 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
   } catch (const std::system_error& ex) {
     XLOG(ERR) << "ERROR: Could not open file " << in_path
       << " exception = " << folly::exceptionStr(ex);
-    DCHECK(CPU_executor) << "invalid CPU_executor";
+    //DCHECK(CPU_executor) << "invalid CPU_executor";
     //std::terminate(); // TODO: gracefull_shutdown
     //CPU_executor->stop();
     //return;
@@ -464,7 +476,7 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
 
   if(buf.empty() || buf.front()->empty()) {
     XLOG(WARNING) << "WARNING: empty input from file " << in_path;
-    return;
+    return "";
   }
 
   auto queueToString = [](const folly::IOBufQueue& queue) {
@@ -473,7 +485,14 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
     return out;
   };
 
-  const std::string file_contents = queueToString(buf);
+  return queueToString(buf);
+}
+
+static void processTemplate(const std::string& in_path,
+    const std::string out_path) {
+  using namespace ::CXTPL::core::errors;
+
+  const std::string file_contents = readFile(in_path);
   XLOG(DBG9) << "input file contents" << file_contents;
 
   CXTPL::core::Generator template_engine;
@@ -528,32 +547,99 @@ static void processTemplate(const std::string& in_path, const std::string out_pa
   XLOG(DBG9) << "input path for generator: " << in_path;
   XLOG(DBG9) << "generated output data: " << genResult.value();
 
-  // see folly/io/async/AsyncPipe.cpp#L223
-  try {
-    auto cleanup = gsl::finally([prevPath = fs::current_path()] {
-        fs::current_path(prevPath);
-    });
-    fs::current_path(fs::absolute(resdir_abs_path));
 
-    const fs::path out_abs_path = fs::absolute(out_path);
-    XLOG(DBG9) << "started writing into file " << out_abs_path;
-    if(!atomicallyWriteFileToDisk(genResult.value(), out_abs_path)) {
-      XLOG(ERR) << "ERROR: can`t write to file " << out_abs_path;
+  if(generator_path_arg.is_initialized()
+     && !generator_path_arg.value().empty())
+  {
+#if defined(CLING_IS_ON)
+    DCHECK(g_interp);
+
+    const std::string out_abs_path_str = fs::absolute(out_path).u8string();
+
+    {
+      std::ostringstream sstr;
+      // scope begin
+      sstr << "[](){";
+      // vars begin
+      sstr << "const std::string& cling_genResult = ";
+      sstr << "*(const std::string*)("
+              // Pass a pointer into cling as a string.
+           << std::hex << std::showbase
+           << reinterpret_cast<size_t>(&genResult.value()) << ");";
+      sstr << "const std::string& out_abs_path_str = ";
+      sstr << "*(const std::string*)("
+              // Pass a pointer into cling as a string.
+           << std::hex << std::showbase
+           << reinterpret_cast<size_t>(&out_abs_path_str) << ");";
+
+      // vars end
+      sstr << "return ";
+      sstr << "onBeforeTemplateGeneration(";
+      sstr << "cling_genResult, out_abs_path_str";
+      sstr << ");";
+      // scope end
+      sstr << "}();";
+      g_interp->processCode(sstr.str());
+    }
+
+    g_interp->processCode(genResult.value());
+
+    {
+      std::ostringstream sstr;
+      // scope begin
+      sstr << "[](){";
+      // vars begin
+      sstr << "const std::string& cling_genResult = ";
+      sstr << "*(const std::string*)("
+              // Pass a pointer into cling as a string.
+           << std::hex << std::showbase
+           << reinterpret_cast<size_t>(&genResult.value()) << ");";
+      sstr << "const std::string& out_abs_path_str = ";
+      sstr << "*(const std::string*)("
+              // Pass a pointer into cling as a string.
+           << std::hex << std::showbase
+           << reinterpret_cast<size_t>(&out_abs_path_str) << ");";
+
+      // vars end
+      sstr << "return ";
+      sstr << "onAfterTemplateGeneration(";
+      sstr << "cling_genResult, out_abs_path_str";
+      sstr << ");";
+      // scope end
+      sstr << "}();";
+      g_interp->processCode(sstr.str());
+    }
+#else
+    CHECK(false) << "CLING must be enabled to use custom generators";
+#endif // CLING_IS_ON
+  } else {
+    // see folly/io/async/AsyncPipe.cpp#L223
+    try {
+      auto cleanup = gsl::finally([prevPath = fs::current_path()] {
+          fs::current_path(prevPath);
+      });
+      fs::current_path(fs::absolute(resdir_abs_path));
+
+      const fs::path out_abs_path = fs::absolute(out_path);
+      XLOG(DBG9) << "started writing into file " << out_abs_path;
+      if(!atomicallyWriteFileToDisk(genResult.value(), out_abs_path)) {
+        XLOG(ERR) << "ERROR: can`t write to file " << out_abs_path;
+        //std::terminate(); // TODO: gracefull_shutdown
+        //CPU_executor->stop();
+        DCHECK(CPU_executor) << "invalid CPU_executor";
+        //return;
+        std::terminate(); /// TODO: gracefull_shutdown
+      }
+      XLOG(DBG6) << "Wrote " << genResult.value().size() << " bytes to file " << out_abs_path;
+    } catch (const std::system_error& ex) {
+      XLOG(ERR) << "ERROR: Could not open file " << in_path
+        << " exception = " << folly::exceptionStr(ex);
       //std::terminate(); // TODO: gracefull_shutdown
       //CPU_executor->stop();
       DCHECK(CPU_executor) << "invalid CPU_executor";
       //return;
       std::terminate(); /// TODO: gracefull_shutdown
     }
-    XLOG(DBG6) << "Wrote " << genResult.value().size() << " bytes to file " << out_abs_path;
-  } catch (const std::system_error& ex) {
-    XLOG(ERR) << "ERROR: Could not open file " << in_path
-      << " exception = " << folly::exceptionStr(ex);
-    //std::terminate(); // TODO: gracefull_shutdown
-    //CPU_executor->stop();
-    DCHECK(CPU_executor) << "invalid CPU_executor";
-    //return;
-    std::terminate(); /// TODO: gracefull_shutdown
   }
 }
 
@@ -671,6 +757,8 @@ int main(int argc, char* argv[]) {
     const char* log_arg_name = "log,L";
     const char* global_timeout_arg_name = "global_timeout_ms,G";
     const char* single_task_timeout_arg_name = "single_task_timeout_ms,T";
+    //const char* generator_arg_name = "generator";
+    const char* generator_path_arg_name = "generator_path";
 
     // TODO: --watch arg https://github.com/blockspacer/skia-opengl-emscripten/blob/bb16ab108bc4018890f4ff3179250b76c0d9053b/src/chromium/net/dns/dns_config_service_posix.cc#L279
 
@@ -689,6 +777,8 @@ int main(int argc, char* argv[]) {
       (resdir_arg_name, po::value(&resdir_arg)->default_value(boost::none, ""), "change output directory path (where to place generated files)")
       (srcdir_arg_name, po::value(&srcdir_arg)->default_value(boost::none, ""), "change current working directory path (path to template files)")
       (in_arg_name, po::value(&in_args)->multitoken(), "list of template files that must be used for C++ code generation")
+      //(generator_arg_name, po::value(&generator_arg)->default_value(boost::none, ""), "generator name for code generation")
+      (generator_path_arg_name, po::value(&generator_path_arg)->default_value(boost::none, ""), "path to generator C++ file")
       // TODO: outfile_pattern_name
       //(outfile_pattern_name, po::value(&outfile_pattern)->default_value("{out.dir}{in.filename}{in.ext}.cpp"), "output format")
       (out_arg_name, po::value(&out_args)->multitoken(), "list of C++ files that must be generated from templates");
@@ -719,6 +809,24 @@ int main(int argc, char* argv[]) {
     if (vm.count("version") || vm.count("V")) {
       XLOG(INFO) << CXTPL_tool_VERSION;
       return EXIT_SUCCESS;
+    }
+
+    if(generator_path_arg.is_initialized() && !generator_path_arg.value().empty()) {
+  #if defined(CLING_IS_ON)
+      generator_file_contents = readFile(generator_path_arg.value_or(""));
+      XLOG(DBG9) << "generator file contents" << generator_file_contents;
+      DCHECK(!g_interp);
+      g_interp
+        = std::make_unique<cling_utils::InterpreterModule>(
+            "CXTPL_Cling_Interpreter");
+      if(!generator_file_contents.empty()) {
+        g_interp->processCode(generator_file_contents.c_str());
+      } else {
+        DCHECK(false) << "empty file for custom generator";
+      }
+  #else
+      CHECK(false) << "CLING must be enabled to use custom generators";
+  #endif // CLING_IS_ON
     }
 
     if (in_args.empty()) {

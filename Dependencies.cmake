@@ -12,6 +12,11 @@ set( BOOST_ROOT CACHE STRING /usr )
 set( Boost_ADDITIONAL_VERSIONS "1.62 1.63 1.64 1.65 1.66 1.67 1.68 1.69" )
 set( BOOST_LIBS CACHE STRING ${BOOST_ROOT}/lib )
 
+if(ENABLE_CLING)
+  # This project needs cling.
+  find_package(Cling REQUIRED)
+endif(ENABLE_CLING)
+
 find_package( Boost
   COMPONENTS
   coroutine
