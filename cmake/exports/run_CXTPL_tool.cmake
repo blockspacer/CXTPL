@@ -23,6 +23,8 @@ if(NOT ${GENERATOR_PATH} STREQUAL "")
   set(CXTPL_GENERATOR_PATH ${GENERATOR_PATH})
 endif()
 
+string(REPLACE " " ";" CXTPL_EXTRA_ARGS_as_list "${CXTPL_EXTRA_ARGS}")
+
 message(STATUS "running CXTPL_tool command:
 ${CXTPL_tool_PROGRAM} \
                         -L \"${CXTPL_tool_LOG_CONFIG}\" \
@@ -32,10 +34,8 @@ ${CXTPL_tool_PROGRAM} \
                         --srcdir ${INPUTS_DIR} \
                         --resdir ${OUTPUTS_DIR} \
                         ${CXTPL_GENERATOR_ARG} ${CXTPL_GENERATOR_PATH} \
-                        ${CXTPL_EXTRA_ARGS} \
+                        ${CXTPL_EXTRA_ARGS_as_list} \
 ")
-
-string(REPLACE " " ";" CXTPL_EXTRA_ARGS_as_list "${CXTPL_EXTRA_ARGS}")
 
 execute_process(COMMAND ${CXTPL_tool_PROGRAM}
                         -L

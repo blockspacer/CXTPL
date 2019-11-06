@@ -92,6 +92,7 @@ if(CXTPL_tool)
     # NOTE: regen files at build step
     add_custom_target(
       CXTPL_tool_target_for_${ARGUMENTS_TARGET}_${ARGUMENTS_GUID} ALL
+      VERBATIM # If VERBATIM is given then all arguments to the commands will be escaped properly
       COMMAND
         ${CMAKE_COMMAND}
         -DCXTPL_tool_PROGRAM=${CXTPL_tool_PROGRAM}
@@ -99,10 +100,10 @@ if(CXTPL_tool)
         -DINPUTS_DIR=${ARGUMENTS_INPUTS_DIR}
         -DOUTPUTS_DIR=${ARGUMENTS_OUTPUTS_DIR}
         -DGENERATOR_PATH=${ARGUMENTS_GENERATOR_PATH}
-        -DINPUTS="${ARGUMENTS_INPUTS}"
-        -DOUTPUTS="${ARGUMENTS_OUTPUTS}"
-        -DCXTPL_EXTRA_ARGS="${ARGUMENTS_EXTRA_ARGS}"
-        -DCXTPL_tool_LOG_CONFIG="${LOG_CONFIG}"
+        -DINPUTS=${INPUTS_as_string}
+        -DOUTPUTS=${OUTPUTS_as_string}
+        -DCXTPL_EXTRA_ARGS=${CXTPL_EXTRA_ARGS_as_string}
+        -DCXTPL_tool_LOG_CONFIG=${LOG_CONFIG}
         -P
         ${FindCXTPL_tool_LIST_DIR}/run_CXTPL_tool.cmake)
 
