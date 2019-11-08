@@ -1,5 +1,9 @@
 ﻿#include "ClingInterpreterModule.hpp"
 
+/// \todo use boost outcome for error reporting
+#include <iostream>
+#include <exception>
+
 #if defined(CLING_IS_ON)
 
 // __has_include is currently supported by GCC and Clang. However GCC 4.9 may have issues and
@@ -27,8 +31,15 @@ InterpreterModule::InterpreterModule(const std::string &id)
 InterpreterModule::~InterpreterModule() {}
 
 void InterpreterModule::processCode(const std::string& code) {
+  cling::Interpreter::CompilationResult interpRes;
   cling::Value res; // Will hold the result of the expression evaluation.
-  interpreter_->process(code.c_str(), &res);
+  interpRes = interpreter_->process(code.c_str(), &res);
+  if(interpRes
+      != cling::Interpreter::Interpreter::kSuccess) {
+    /// \todo use boost outcome for error reporting
+    std::cerr << "ERROR while running code\n" << code.substr(0, 100) << std::endl;
+    std::terminate();
+  }
 }
 
 void add_default_cling_args(std::vector<std::string> &args) {
