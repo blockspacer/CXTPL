@@ -1,8 +1,16 @@
 // --- SETUP ---
 
+/// \note define for easier debugging of that source file
+// #define _ENABLE_DEBUG_PRINTF 1
+
+/// \note include here all headers that may be used by `.cxtpl` templates
 #include <string>
 #include <cstdio>
 #include <fstream>
+#include <vector>
+#include <map>
+#include <sstream>
+#include <algorithm>
 
 // __has_include is currently supported by GCC and Clang. However GCC 4.9 may have issues and
 // returns 1 for 'defined( __has_include )', while '__has_include' is actually not supported:
@@ -28,9 +36,14 @@ static std::vector<std::string> generator_includes{
 };
 
 /// \note cxtpl_output will be changed from another file (from Cling)
+/// \todo remove that global variable: get `cxtpl_output` as cling::Value and pass it into onAfterTemplateGeneration
 std::string cxtpl_output;
 
 void writeToFile(const std::string& str, const std::string& file_path) {
+/*#if defined(_ENABLE_DEBUG_PRINTF)
+  printf("writeToFile %s %s\n", file_path.c_str(), str.substr(0, 100).c_str());
+#endif // _ENABLE_DEBUG_PRINTF*/
+
     fs::create_directories(fs::path(file_path).parent_path());
 
     std::ofstream ofs(file_path);

@@ -580,7 +580,23 @@ static void processTemplate(const std::string& in_path,
       g_interp->processCode(sstr.str());
     }
 
-    g_interp->processCode(genResult.value());
+    /// \note we need to isolate interpreted code to prevent
+    /// variable declaration in parent-scope, so
+    /// wrap everything into lambda
+    {
+      std::ostringstream sstr;
+      // scope begin
+      sstr << "[](){";
+      /// \note cxtpl_output is predefined variable name
+      //sstr << "std::string cxtpl_output;"; /// \todo get `cxtpl_output` as cling::Value
+      sstr << "{";
+      sstr << genResult.value();
+      sstr << "}";
+      //sstr << "return cxtpl_output;"; /// \todo get `cxtpl_output` as cling::Value
+      // scope end
+      sstr << "}();";
+      g_interp->processCode(sstr.str());
+    }
 
     {
       std::ostringstream sstr;
