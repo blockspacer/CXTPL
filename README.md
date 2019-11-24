@@ -370,7 +370,7 @@ cmake -E make_directory build
 ```bash
 cmake -E chdir build conan install --build=missing --profile gcc -o enable_tests=False ..
 # configure
-cmake -E chdir build cmake -E time cmake -DBUILD_EXAMPLES=FALSE -DENABLE_CLING=FALSE -DCMAKE_BUILD_TYPE=Debug ..
+cmake -E chdir build cmake -E time cmake -DBUILD_EXAMPLES=FALSE -DENABLE_CLING=FALSE -DINSTALL_CLING=FALSE -DCMAKE_BUILD_TYPE=Debug ..
 # build
 cmake -E chdir build cmake -E time cmake --build . -- -j6
 ```
@@ -398,7 +398,7 @@ cmake -E time ./build/bin/CXTPL_tool --threads 6 --input_files build/file1.cxtpl
 ```bash
 # (optional) check examples. Requires -DBUILD_EXAMPLES=TRUE
 # configure
-cmake -E chdir build cmake -E time cmake -DBUILD_EXAMPLES=TRUE -DENABLE_CLING=FALSE -DCMAKE_BUILD_TYPE=Debug ..
+cmake -E chdir build cmake -E time cmake -DBUILD_EXAMPLES=TRUE -DENABLE_CLING=FALSE -DINSTALL_CLING=FALSE -DCMAKE_BUILD_TYPE=Debug ..
 # build
 cmake -E chdir build cmake -E time cmake --build . -- -j6
 # examples
@@ -516,7 +516,7 @@ Generator path must be valid `.cpp` file that will be executed by Cling.
 
 You can set generator path via `--generator_path=YOUR_PATH_TO_CPP_FILE_HERE`
 
-Use `install_cling.sh` and build CXTPL with Cling support `-DENABLE_CLING=TRUE`.
+Use `install_cling.sh` and build CXTPL with Cling support `-DENABLE_CLING=TRUE -DINSTALL_CLING=TRUE`.
 
 ```bash
 # BEFORE install_cling.sh:
@@ -537,6 +537,16 @@ bash install_cling.sh
 
 NOTE:
 - Custom generators created for fast prototyping. You can create custom command-line tool (see sources of `CXTPL_tool`) to do more than custom generators and without Cling performance overhead. Chain outputs of tools like so: CXTPL outputs cpp files with result stored in C++ variable -> Custom tool outputs any file format based on result stored in C++ variable.
+
+## Got error `libcling.so.5: cannot open shared object file: No such file or
+directory`
+
+Install with `-DENABLE_CLING=TRUE -DINSTALL_CLING=TRUE` and set `LD_LIBRARY_PATH`
+
+```bash
+export LD_LIBRARY_PATH=/usr/local/lib/:$LD_LIBRARY_PATH
+sudo ldconfig
+```
 
 ## ⭐️ How to Contribute
 
