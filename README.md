@@ -476,6 +476,7 @@ See examples/cmake_integration
 ## Projects that use `.cxtpl`
 
 - [CXXCTP](https://github.com/blockspacer/CXXCTP) is a transpiler that extends C++ for new introspection, reflection and compile-time execution.
+- [SKG](https://github.com/blockspacer/skia-opengl-emscripten) C++ HTML/CSS UI.
 
 ## Project status
 
