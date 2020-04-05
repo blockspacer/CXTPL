@@ -22,12 +22,17 @@ target_link_libraries(CXTPL_tool PUBLIC
   CXTPL_core
 )
 
+target_link_libraries( CXTPL_tool PRIVATE
+  ${base_LIB}
+  ${build_util_LIB}
+)
+
 target_include_directories(CXTPL_tool PUBLIC
   ${LIBIBERTY_INCLUDE_DIR} # used by folly
-  ${G3LOG_INCLUDE_DIR} # used by folly
+  #${G3LOG_INCLUDE_DIR} # used by folly
   ${LIBEVENT_INCLUDE_DIR} # used by folly
   ${LZ4_INCLUDE_DIR} # used by folly
-  ${LIBGFLAGS_INCLUDE_DIR} # used by folly
+  #${LIBGFLAGS_INCLUDE_DIR} # used by folly
   ${FOLLY_INCLUDE_DIR}
 )
 

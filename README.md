@@ -182,81 +182,6 @@ sudo -E docker run --rm -v "$PWD":/home/u/cxtpl -w /home/u/cxtpl/build cpp-docke
 # ./build/<app>
 ```
 
-## DEPENDENCIES
-
-- [Boost](https://www.boost.org/)
-
-```bash
-sudo add-apt-repository ppa:boost-latest/ppa
-sudo apt-get update && sudo apt-get upgrade
-aptitude search boost
-sudo apt-get install libboost-dev
-```
-
-- MPI
-
-```bash
-sudo apt-get install openmpi-bin openmpi-common libopenmpi-dev
-```
-
-- CMake
-
-```bash
-sudo -E apt-get purge -y cmake
-bash scripts/install_cmake.sh
-```
-
-- g3log
-
-```bash
-bash scripts/install_g3log.sh
-```
-
-- gtest
-
-```bash
-bash scripts/install_gtest.sh
-```
-
-- gflags
-
-```bash
-bash scripts/install_gflags.sh
-```
-
-NOTE: need libunwind with -fPIC (POSITION_INDEPENDENT_CODE) support
-
-```bash
-bash scripts/install_libunwind.sh
-```
-
-- Folly
-
-deps from https://github.com/facebook/folly#ubuntu-1604-lts
-
-```bash
-sudo apt-get install \
-    libevent-dev \
-    libdouble-conversion-dev \
-    libgoogle-glog-dev \
-    libgflags-dev \
-    libiberty-dev \
-    liblz4-dev \
-    liblzma-dev \
-    libsnappy-dev \
-    zlib1g-dev \
-    binutils-dev \
-    libjemalloc-dev \
-    libssl-dev \
-    pkg-config
-```
-
-NOTE: we patched folly for clang support https://github.com/facebook/folly/issues/976
-
-```bash
-bash scripts/install_folly.sh
-```
-
 ## Install conan - a crossplatform dependency manager for C++
 
 ```bash
@@ -353,12 +278,124 @@ Useful links:
 - CONAN_PKG::cppzmq https://github.com/chaplin89/prontocpp/blob/master/CMakeLists.txt#L42
 - https://github.com/conan-io/examples
 
+## Add conan remotes
+
+To be able to add the list of dependency remotes please type the following command:
+
+```bash
+cmake -E time conan config install conan/remotes/
+# OR:
+# cmake -E time conan config install conan/remotes_disabled_ssl/
+```
+
+## DEPENDENCIES
+
+```bash
+# NOTE: don't forget to re-run `conan install` after command below
+# NOTE: change `build_type=Debug` to `build_type=Release` in production
+cmake -DEXTRA_CONAN_OPTS="--profile;clang;-s;build_type=Debug;--build;missing" -P tools/buildConanThirdparty.cmake
+```
+
+- type_safe
+
+```bash
+conan remote add Manu343726 https://api.bintray.com/conan/manu343726/conan-packages False
+
+git clone https://github.com/foonathan/type_safe.git -b v0.2.1
+
+cd type_safe
+
+# NOTE: change `build_type=Debug` to `build_type=Release` in production
+CONAN_REVISIONS_ENABLED=1 \
+    CONAN_VERBOSE_TRACEBACK=1 \
+    CONAN_PRINT_RUN_COMMANDS=1 \
+    CONAN_LOGGING_LEVEL=10 \
+    GIT_SSL_NO_VERIFY=true \
+    conan create . conan/stable -s build_type=Debug --profile clang --build missing
+```
+
+- corrade
+
+```bash
+# NOTE: change `build_type=Debug` to `build_type=Release` in production
+git clone git://github.com/mosra/corrade && cd corrade
+CONAN_REVISIONS_ENABLED=1 \
+    CONAN_VERBOSE_TRACEBACK=1 \
+    CONAN_PRINT_RUN_COMMANDS=1 \
+    CONAN_LOGGING_LEVEL=10 \
+    GIT_SSL_NO_VERIFY=true \
+    conan create . magnum/stable -s build_type=Debug --profile clang --build missing -tf package/conan/test_package
+```
+
+- MPI
+
+```bash
+sudo apt-get install openmpi-bin openmpi-common libopenmpi-dev
+```
+
+- CMake
+
+```bash
+sudo -E apt-get purge -y cmake
+bash scripts/install_cmake.sh
+```
+
+- g3log
+
+```bash
+bash scripts/install_g3log.sh
+```
+
+- gtest
+
+```bash
+bash scripts/install_gtest.sh
+```
+
+- gflags
+
+```bash
+bash scripts/install_gflags.sh
+```
+
+NOTE: need libunwind with -fPIC (POSITION_INDEPENDENT_CODE) support
+
+```bash
+bash scripts/install_libunwind.sh
+```
+
+- Folly
+
+deps from https://github.com/facebook/folly#ubuntu-1604-lts
+
+```bash
+sudo apt-get install \
+    libevent-dev \
+    libdouble-conversion-dev \
+    libgoogle-glog-dev \
+    libgflags-dev \
+    libiberty-dev \
+    liblz4-dev \
+    liblzma-dev \
+    libsnappy-dev \
+    zlib1g-dev \
+    binutils-dev \
+    libjemalloc-dev \
+    libssl-dev \
+    pkg-config
+```
+
+NOTE: we patched folly for clang support https://github.com/facebook/folly/issues/976
+
+```bash
+bash scripts/install_folly.sh
+```
+
 ## How to build
 
 ```bash
-# tested with gcc
-export CC=gcc
-export CXX=g++
+export CC=clang-6.0
+export CXX=clang++-6.0
 ```
 
 ```bash
@@ -368,7 +405,21 @@ cmake -E make_directory build
 ```
 
 ```bash
-cmake -E chdir build conan install --build=missing --profile gcc -o enable_tests=False ..
+# NOTE: change `build_type=Debug` to `build_type=Release` in production
+CONAN_REVISIONS_ENABLED=1 \
+  CONAN_VERBOSE_TRACEBACK=1 \
+  CONAN_PRINT_RUN_COMMANDS=1 \
+  CONAN_LOGGING_LEVEL=10 \
+  GIT_SSL_NO_VERIFY=true \
+    cmake -E chdir build \
+      cmake -E time \
+        conan install \
+        -s build_type=Debug \
+        --build=missing \
+        --profile clang \
+        -o openssl:shared=True \
+        -o enable_tests=False \
+        ..
 # configure
 cmake -E chdir build cmake -E time cmake -DBUILD_EXAMPLES=FALSE -DENABLE_CLING=FALSE -DINSTALL_CLING=FALSE -DCMAKE_BUILD_TYPE=Debug ..
 # build

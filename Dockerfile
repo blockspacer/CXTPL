@@ -15,6 +15,8 @@ FROM        ubuntu:${UBUNTU_VERSION} as cxtpl_build_env
 ARG ENABLE_LLVM="True"
 ARG GIT_EMAIL="you@example.com"
 ARG GIT_USERNAME="Your Name"
+# SEE: http://kefhifi.com/?p=701
+ARG GIT_WITH_OPENSSL=""
 ARG APT="apt-get -qq --no-install-recommends"
 # docker build --build-arg NO_SSL="False" APT="apt-get -qq --no-install-recommends" .
 ARG NO_SSL="True"
@@ -83,6 +85,70 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 # TODO
 # better dev-env https://github.com/aya/infra/blob/318b16621c7f6d3cd33cfd481f46eed5d750b6aa/stack/ide/docker/ide/Dockerfile
 
+
+# TODO
+#RUN set -ex \
+#    && for key in \
+#    4ED778F539E3634C779C87C6D7062848A1AB005C \
+#    B9E2F5981AA6E0CD28160D9FF13993A75599653C \
+#    94AE36675C464D64BAFA68DD7434390BDBE9B9C5 \
+#    B9AE9905FFD7803F25714661B63B535A4C206CA9 \
+#    77984A986EBC2AA786BC0F66B01FBB92821C587A \
+#    71DCFD284A79C3B38668286BC97EC7A07EDE3FC1 \
+#    FD3A5288F042B6850C66B31F09FE44734EB7990E \
+#    8FCCA13FEF1D0C2E91008E09770F7A9A5AE15600 \
+#    C4F0DFFF4E8C1A8236409D08E73BC641CC11F4C8 \
+#    DD8F2338BAE7501E3DD5AC78C273792F7D83545D \
+#    A48C2BEE680E841632CD4E44F07496B3EB3C1762 \
+#    ; do \
+#    gpg --batch --keyserver ipv4.pool.sks-keyservers.net --recv-keys "$key" || \
+#    gpg --batch --keyserver pool.sks-keyservers.net --recv-keys "$key" || \
+#    gpg --batch --keyserver pgp.mit.edu --recv-keys "$key" || \
+#    gpg --batch --keyserver keyserver.pgp.com --recv-keys "$key" || \
+#    gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key" ; \
+#    done
+
+#                            python \
+#                            python-dev \
+#                            python-pip \
+#                            python-setuptools
+
+# RUN mkdir ~/.pip && echo "[global]\n#index-urls:  https://pypi.douban.com, https://mirrors.aliyun.com/pypi,\ncheckout https://www.pypi-mirrors.org/ for more available mirror servers\nindex-url = https://pypi.douban.com/simple\ntrusted-host = pypi.douban.com" > ~/.pip/pip.conf
+
+# pip install pip setuptools --index-url=https://pypi.python.org/simple/ --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org
+
+# RUN mkdir -p $HOME/.config/pip/
+# # https://stackoverflow.com/a/54397762
+# RUN echo $'
+# [global]
+# timeout = 60
+# index-url = https://pypi.python.org/simple/
+# extra-index-url = http://151.101.112.223/root/pypi/+simple/
+#                 http://pypi.python.org/simple
+# trusted-host = download.zope.org
+#             pypi.python.org
+#             secondary.extra.host
+#             https://pypi.org
+#             pypi.org
+#             pypi.org:443
+#             151.101.128.223
+#             151.101.128.223:443
+#             https://pypi.python.org
+#             pypi.python.org
+#             pypi.python.org:443
+#             151.101.112.223
+#             151.101.112.223:443
+#             https://files.pythonhosted.org
+#             files.pythonhosted.org
+#             files.pythonhosted.org:443
+#             151.101.113.63
+#             151.101.113.63:443
+# ' >> $HOME/.config/pip/pip.conf
+
+# TODO https://github.com/moby/moby/issues/1799#issuecomment-489119778
+
+# RUN cat $HOME/.pip/pip.conf
+
 # https://www.peterbe.com/plog/set-ex
 # RUN set -ex
 
@@ -150,25 +216,49 @@ RUN set -ex \
   # NOTE: need to set at least empty http-proxy \
   # https://github.com/EtiennePerot/parcimonie.sh/issues/15 \
   && \
+  export GNUPGHOME="$(mktemp -d)" \
+  && \
+  (mkdir ~/.gnupg || true) \
+  && \
+  echo "keyserver-options auto-key-retrieve" >> ~/.gnupg/gpg.conf \
+  && \
+  wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key --no-check-certificate | apt-key add - \
+  && \
+  # Try more keyservers to fix unstable builds \
+  # see https://unix.stackexchange.com/a/361220 \
+  keyservers="hkp://keyserver.ubuntu.com:80"\ "keyserver.ubuntu.com:80"\ "pool.sks-keyservers.net"\ "keyserver.ubuntu.com"\ "ipv4.pool.sks-keyservers.net"\ "Zpool.sks-keyservers.net"\ "keyserver.pgp.com"\ "ha.pool.sks-keyservers.net"\ "hkp://p80.pool.sks-keyservers.net:80"\ "pgp.mit.edu" \
+  && \
+  keys=94558F59\ 1E9377A2BA9EF27F\ 2EA8F35793D8809A \
+  && \
   if [ ! -z "$http_proxy" ]; then \
-    apt-key adv --keyserver-options http-proxy=$http_proxy --keyserver keyserver.ubuntu.com --recv-keys 94558F59 \
+    echo 'WARNING: GPG SSL CHECKS DISABLED! SEE http_proxy IN DOCKERFILE' \
     && \
-    apt-key adv --keyserver-options http-proxy=$http_proxy --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F \
+    for key in $keys; do \
+    for server in $keyservers; do \
+    echo "Fetching GPG key ${key} from ${server}" \
     && \
-    apt-key adv --keyserver-options http-proxy=$http_proxy --keyserver keyserver.ubuntu.com --recv-keys 2EA8F35793D8809A \
+    (gpg --keyserver "$server" --keyserver-options http-proxy=$http_proxy --recv-keys "${key}" || true) \
+    ; done \
+    ; done \
     ; \
   else \
-    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 94558F59 \
+    for key in $keys; do \
+    for server in $keyservers; do \
+    echo "Fetching GPG key ${key} from ${server}" \
     && \
-    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 1E9377A2BA9EF27F \
-    && \
-    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 2EA8F35793D8809A \
+    (gpg --keyserver "$server" --keyserver-options timeout=10 --recv-keys "${key}" || true) \
+    ; done \
+    ; done \
     ; \
   fi \
   && \
-  apt-key adv --keyserver-options http-proxy=$http_proxy --fetch-keys http://llvm.org/apt/llvm-snapshot.gpg.key \
+  gpg --list-keys \
   && \
-  apt-add-repository -y "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $(lsb_release -sc) main" \
+  (apt-key adv --keyserver-options http-proxy=$http_proxy --fetch-keys http://llvm.org/apt/llvm-snapshot.gpg.key || true) \
+  && \
+  echo "added llvm-snapshot.gpg.key" \
+  #&& \
+  #apt-add-repository -y "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $(lsb_release -sc) main" \
   && \
   apt-add-repository -y "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main" \
   && \
@@ -177,6 +267,10 @@ RUN set -ex \
   apt-add-repository -y "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main" \
   && \
   apt-add-repository -y "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-8 main" \
+  && \
+  echo "added llvm-toolchain repository" \
+  && \
+  ldconfig \
   && \
   $APT update \
   && \
@@ -214,29 +308,32 @@ RUN set -ex \
     ; \
     fi \
   && \
-  $APT install -y libboost-dev \
+  $APT install -y \
+                    #libboost-dev \
+                    #libevent-dev \
+                    #libdouble-conversion-dev \
+                    #libgoogle-glog-dev \
+                    #libiberty-dev \
+                    #liblz4-dev \
+                    #liblzma-dev \
+                    #libsnappy-dev \
+                    #zlib1g-dev \
+                    #libboost-all-dev \
+                    #libjemalloc-dev \
+                    #
+                    #libgflags-dev \
+                    #libgtest-dev \
+                    #bison \
+                    #flex \
+                    #gperf \
                     openmpi-bin \
                     openmpi-common \
                     libopenmpi-dev \
-                    libevent-dev \
-                    libdouble-conversion-dev \
-                    libgoogle-glog-dev \
-                    libgflags-dev \
-                    libiberty-dev \
-                    liblz4-dev \
-                    liblzma-dev \
-                    libsnappy-dev \
-                    zlib1g-dev \
                     binutils-dev \
-                    libjemalloc-dev \
                     libssl-dev \
                     pkg-config \
                     autoconf-archive \
-                    bison \
-                    flex \
-                    gperf \
                     joe \
-                    libboost-all-dev \
                     libcap-dev \
                     libkrb5-dev \
                     libpcre3-dev \
@@ -251,13 +348,14 @@ RUN set -ex \
                     g++ \
                     gnutls-bin \
                     openssl \
-                    libgtest-dev \
                     fakeroot \
                     dpkg-dev \
                     libcurl4-openssl-dev \
                     libzstd-dev \
   && \
   $APT install -y mesa-utils \
+                            libegl1-mesa-dev \
+                            libgles2-mesa-dev \
                             libglu1-mesa-dev \
                             dbus-x11 \
                             libx11-dev \
@@ -269,6 +367,68 @@ RUN set -ex \
                             python3-setuptools \
   # For convenience, alias (but don't sym-link) python & pip to python3 & pip3 as recommended in: \
   # http://askubuntu.com/questions/351318/changing-symlink-python-to-python3-causes-problems \
+  && \
+  if [ ! -z "$GIT_WITH_OPENSSL" ]; then \
+    echo 'building git from source, see ARG GIT_WITH_OPENSSL' \
+    && \
+    # Ubuntu's default git package is built with broken gnutls. Rebuild git with openssl.
+    $APT update \
+    #&& \
+    #add-apt-repository ppa:git-core/ppa  \
+    #apt-add-repository "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $(lsb_release -sc) main" \
+    #&& \
+    #apt-key add 1E9377A2BA9EF27F \
+    #&& \
+    #printf "deb-src http://ppa.launchpad.net/git-core/ppa/ubuntu ${CODE_NAME} main\n" >> /etc/apt/sources.list.d/git-core-ubuntu-ppa-bionic.list \
+    && \
+    $APT install -y --no-install-recommends \
+       software-properties-common \
+       fakeroot ca-certificates tar gzip zip \
+       autoconf automake bzip2 file g++ gcc \
+       #imagemagick libbz2-dev libc6-dev libcurl4-openssl-dev \
+       #libglib2.0-dev libevent-dev \
+       #libdb-dev  libffi-dev libgeoip-dev libjpeg-dev libkrb5-dev \
+       #liblzma-dev libncurses-dev \
+       #libmagickcore-dev libmagickwand-dev libmysqlclient-dev libpng-dev \
+       libssl-dev libtool libxslt-dev \
+       #libpq-dev libreadline-dev libsqlite3-dev libwebp-dev libxml2-dev \
+       #libyaml-dev zlib1g-dev \
+       make patch xz-utils unzip curl  \
+    && \
+    sed -i -- 's/#deb-src/deb-src/g' /etc/apt/sources.list \
+    && \
+    sed -i -- 's/# deb-src/deb-src/g' /etc/apt/sources.list \
+    && \
+    $APT update \
+    && \
+    $APT install -y gnutls-bin openssl \
+    && \
+    $APT install -y build-essential fakeroot dpkg-dev -y \
+    #&& \
+    #($APT remove -y git || true ) \
+    && \
+    $APT build-dep git -y \
+    && \
+    # git build deps
+    $APT install -y libcurl4-openssl-dev liberror-perl git-man -y \
+    && \
+    mkdir source-git \
+    && \
+    cd source-git/ \
+    && \
+    $APT source git \
+    && \
+    cd git-2.*.*/ \
+    && \
+    sed -i -- 's/libcurl4-gnutls-dev/libcurl4-openssl-dev/' ./debian/control \
+    && \
+    sed -i -- '/TEST\s*=\s*test/d' ./debian/rules \
+    && \
+    dpkg-buildpackage -rfakeroot -b -uc -us \
+    && \
+    dpkg -i ../git_*ubuntu*.deb \
+    ; \
+  fi \
   && \
   echo "alias python='python3'" >> /root/.bash_aliases \
   && \
@@ -330,77 +490,13 @@ RUN set -ex \
   && \
   $APT autoremove \
   && \
-  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-# TODO
-#RUN set -ex \
-#    && for key in \
-#    4ED778F539E3634C779C87C6D7062848A1AB005C \
-#    B9E2F5981AA6E0CD28160D9FF13993A75599653C \
-#    94AE36675C464D64BAFA68DD7434390BDBE9B9C5 \
-#    B9AE9905FFD7803F25714661B63B535A4C206CA9 \
-#    77984A986EBC2AA786BC0F66B01FBB92821C587A \
-#    71DCFD284A79C3B38668286BC97EC7A07EDE3FC1 \
-#    FD3A5288F042B6850C66B31F09FE44734EB7990E \
-#    8FCCA13FEF1D0C2E91008E09770F7A9A5AE15600 \
-#    C4F0DFFF4E8C1A8236409D08E73BC641CC11F4C8 \
-#    DD8F2338BAE7501E3DD5AC78C273792F7D83545D \
-#    A48C2BEE680E841632CD4E44F07496B3EB3C1762 \
-#    ; do \
-#    gpg --batch --keyserver ipv4.pool.sks-keyservers.net --recv-keys "$key" || \
-#    gpg --batch --keyserver pool.sks-keyservers.net --recv-keys "$key" || \
-#    gpg --batch --keyserver pgp.mit.edu --recv-keys "$key" || \
-#    gpg --batch --keyserver keyserver.pgp.com --recv-keys "$key" || \
-#    gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key" ; \
-#    done
-
-#                            python \
-#                            python-dev \
-#                            python-pip \
-#                            python-setuptools
-
-# RUN mkdir ~/.pip && echo "[global]\n#index-urls:  https://pypi.douban.com, https://mirrors.aliyun.com/pypi,\ncheckout https://www.pypi-mirrors.org/ for more available mirror servers\nindex-url = https://pypi.douban.com/simple\ntrusted-host = pypi.douban.com" > ~/.pip/pip.conf
-
-# pip install pip setuptools --index-url=https://pypi.python.org/simple/ --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org
-
-# RUN mkdir -p $HOME/.config/pip/
-# # https://stackoverflow.com/a/54397762
-# RUN echo $'
-# [global]
-# timeout = 60
-# index-url = https://pypi.python.org/simple/
-# extra-index-url = http://151.101.112.223/root/pypi/+simple/
-#                 http://pypi.python.org/simple
-# trusted-host = download.zope.org
-#             pypi.python.org
-#             secondary.extra.host
-#             https://pypi.org
-#             pypi.org
-#             pypi.org:443
-#             151.101.128.223
-#             151.101.128.223:443
-#             https://pypi.python.org
-#             pypi.python.org
-#             pypi.python.org:443
-#             151.101.112.223
-#             151.101.112.223:443
-#             https://files.pythonhosted.org
-#             files.pythonhosted.org
-#             files.pythonhosted.org:443
-#             151.101.113.63
-#             151.101.113.63:443
-# ' >> $HOME/.config/pip/pip.conf
-
-# TODO https://github.com/moby/moby/issues/1799#issuecomment-489119778
-
-# RUN cat $HOME/.pip/pip.conf
-
-WORKDIR $WDIR
-
-# pip install setuptools --upgrade
-
-# /usr/lib/python3.6/distutils/dist.py:261: UserWarning: Unknown distribution option: 'long_description_content_type'
-RUN pip3 install --no-cache-dir --index-url=https://pypi.python.org/simple/ --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org wheel \
+  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+  && \
+  cd $WDIR \
+  && \
+  # pip install setuptools --upgrade
+  # /usr/lib/python3.6/distutils/dist.py:261: UserWarning: Unknown distribution option: 'long_description_content_type'
+  pip3 install --no-cache-dir --index-url=https://pypi.python.org/simple/ --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org wheel \
   && \
   pip3 install --no-cache-dir --index-url=https://pypi.python.org/simple/ --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org virtualenv \
   && \
@@ -470,6 +566,8 @@ WORKDIR $WDIR
 FROM        cxtpl_build_env as cxtpl_tool
 ARG GIT_EMAIL="you@example.com"
 ARG GIT_USERNAME="Your Name"
+# NOTE: UPPERCASE (TRUE or FALSE)
+ARG ENABLE_CLING="FALSE"
 ARG APT="apt-get -qq --no-install-recommends"
 ENV LC_ALL=C.UTF-8 \
     LANG=en_US.UTF-8 \
@@ -503,17 +601,6 @@ WORKDIR $WDIR
 # NOTE: ADD invalidate the cache for the copy
 ADD . $WDIR/cxtpl
 
-# RUN git clone --depth=1 --recurse-submodules --single-branch --branch=master https://github.com/blockspacer/cxtpl.git
-
-WORKDIR $WDIR/cxtpl
-
-# need some git config to apply git patch
-RUN git config --global user.email "$GIT_EMAIL" \
-  && \
-  git config --global user.name "$GIT_USERNAME" \
-  && \
-  git submodule update --init --recursive --depth 50 --progress || true
-
 # TODO https://stackoverflow.com/a/40465312
 # RUN git submodule deinit -f . || true
 #RUN git pull --recurse-submodules || true
@@ -521,18 +608,6 @@ RUN git config --global user.email "$GIT_EMAIL" \
 #RUN git fetch --recurse-submodules || true
 #RUN git submodule update --init --recursive --depth 5 || true
 #RUN git submodule update --force --recursive --init --remote || true
-
-WORKDIR $WDIR/cxtpl
-RUN ["chmod", "+x", "scripts/install_cmake.sh"]
-RUN ["chmod", "+x", "scripts/install_g3log.sh"]
-RUN ["chmod", "+x", "scripts/install_gtest.sh"]
-RUN ["chmod", "+x", "scripts/install_gflags.sh"]
-RUN ["chmod", "+x", "scripts/install_folly.sh"]
-
-# Uninstall the default version provided by Ubuntu package manager, so we can install custom one
-RUN set -ex \
-  && \
-  $APT purge -y cmake || true
 
 #RUN set -ex \
 #  && \
@@ -549,28 +624,98 @@ RUN set -ex \
 #  # folly \
 #  /bin/bash -c "source $WDIR/cxtpl/scripts/install_folly.sh"
 
-RUN ["bash", "-c", "bash $WDIR/cxtpl/scripts/install_cmake.sh \
-                        && \
-                        bash $WDIR/cxtpl/scripts/install_g3log.sh \
-                        && \
-                        bash $WDIR/cxtpl/scripts/install_gtest.sh \
-                        && \
-                        bash $WDIR/cxtpl/scripts/install_gflags.sh"]
-
-WORKDIR $WDIR/cxtpl
-RUN ["bash", "-c", "bash $WDIR/cxtpl/scripts/install_folly.sh"]
-WORKDIR $WDIR/cxtpl
-
 #RUN set -ex \
 #  # folly \
 #  # NOTE: we patched folly for clang support https://github.com/facebook/folly/issues/976 \
 #  /bin/bash -c "source $WDIR/cxtpl/scripts/install_folly.sh"
 
+# RUN git clone --depth=1 --recurse-submodules --single-branch --branch=master https://github.com/blockspacer/cxtpl.git
+
+# Uninstall the default version provided by Ubuntu package manager, so we can install custom one
 RUN set -ex \
   && \
-  export CC=gcc \
+  cd $WDIR/cxtpl \
   && \
-  export CXX=g++ \
+  # need some git config to apply git patch
+  git config --global user.email "$GIT_EMAIL" \
+  && \
+  git config --global user.name "$GIT_USERNAME" \
+  && \
+  ( git submodule update --init --recursive --depth 50 --progress || true ) \
+  && \
+  cd $WDIR/cxtpl \
+  && \
+  chmod +x scripts/install_cmake.sh \
+  && \
+  chmod +x scripts/install_g3log.sh \
+  && \
+  chmod +x scripts/install_gtest.sh \
+  && \
+  chmod +x scripts/install_gflags.sh \
+  && \
+  chmod +x scripts/install_folly.sh \
+  && \
+  $APT purge -y cmake || true \
+  && \
+  bash $WDIR/cxtpl/scripts/install_cmake.sh \
+  #&& \
+  #bash $WDIR/cxtpl/scripts/install_g3log.sh \
+  #&& \
+  #bash $WDIR/cxtpl/scripts/install_gtest.sh \
+  #&& \
+  #bash $WDIR/cxtpl/scripts/install_gflags.sh \
+  && \
+  cd $WDIR/cxtpl \
+  #&& \
+  #bash $WDIR/cxtpl/scripts/install_folly.sh \
+  && \
+  cd $WDIR/cxtpl \
+  && \
+  export CC=clang-6.0 \
+  && \
+  export CXX=clang++-6.0 \
+  && \
+  mkdir -p ~/.tmp \
+  && \
+  cd ~/.tmp \
+  && \
+  #type_safe
+  conan remote add Manu343726 https://api.bintray.com/conan/manu343726/conan-packages False \
+  && \
+  git clone https://github.com/foonathan/type_safe.git -b v0.2.1 \
+  && \
+  cd type_safe \
+  && \
+  # NOTE: change `build_type=Debug` to `build_type=Release` in production
+  CONAN_REVISIONS_ENABLED=1 \
+      CONAN_VERBOSE_TRACEBACK=1 \
+      CONAN_PRINT_RUN_COMMANDS=1 \
+      CONAN_LOGGING_LEVEL=10 \
+      GIT_SSL_NO_VERIFY=true \
+      conan create . conan/stable -s build_type=Debug --profile clang --build missing \
+  && \
+  cd ~/.tmp \
+  && \
+  #corrade
+  # NOTE: change `build_type=Debug` to `build_type=Release` in production
+  git clone git://github.com/mosra/corrade \
+  && \
+  cd corrade \
+  && \
+  CONAN_REVISIONS_ENABLED=1 \
+      CONAN_VERBOSE_TRACEBACK=1 \
+      CONAN_PRINT_RUN_COMMANDS=1 \
+      CONAN_LOGGING_LEVEL=10 \
+      GIT_SSL_NO_VERIFY=true \
+      conan create . magnum/stable -s build_type=Debug --profile clang --build missing -tf package/conan/test_package \
+  && \
+  rm -rf ~/.tmp \
+  && \
+  cd $WDIR/cxtpl \
+  && \
+  cmake -E time conan config install conan/remotes/ \
+  && \
+  cmake -DEXTRA_CONAN_OPTS="--profile;clang;-s;build_type=Debug;--build;missing" -P tools/buildConanThirdparty.cmake \
   && \
   cmake -E remove_directory build \
   && \
@@ -580,9 +725,9 @@ RUN set -ex \
   cmake -E make_directory build \
   && \
   # configure \
-  cmake -E chdir build conan install --build=missing --profile gcc .. \
+  cmake -E chdir build conan install --build=missing --profile clang .. \
   && \
-  cmake -E chdir build cmake -E time cmake -DBUILD_EXAMPLES=FALSE -DENABLE_CLING=FALSE -DCMAKE_BUILD_TYPE=Debug .. \
+  cmake -E chdir build cmake -E time cmake -DBUILD_EXAMPLES=FALSE -DENABLE_CLING=$ENABLE_CLING -DCMAKE_BUILD_TYPE=Debug .. \
   && \
   # build \
   cmake -E chdir build cmake -E time cmake --build . -- -j6 \
@@ -594,11 +739,9 @@ RUN set -ex \
   && \
   cmake -E remove_directory *-build \
   && \
-  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-# remove unused apps after install
-RUN set -ex \
+  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/* /build/* \
   && \
+  # remove unused apps after install
   rm -rf $WDIR/cxtpl \
   && \
   $APT remove -y \
@@ -609,7 +752,15 @@ RUN set -ex \
   && \
   $APT autoremove \
   && \
-  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+  mkdir -p /etc/ssh/ && echo ClientAliveInterval 60 >> /etc/ssh/sshd_config \
+  && \
+  ($GIT config --global --unset http.proxyAuthMethod || true) \
+  && \
+  ($GIT config --global --unset http.proxy || true) \
+  && \
+  ($GIT config --global --unset https.proxy || true) \
+  && \
+  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/* /build/* \
   && \
   mkdir -p /etc/ssh/ && echo ClientAliveInterval 60 >> /etc/ssh/sshd_config
 

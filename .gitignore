@@ -109,26 +109,16 @@ examples/cmake_integration/resources/cxtpl/generated/
 
 # C++ objects and libs
 
-*.slo
-*.lo
-*.o
 *.dwo
 *.stamp
 *.ninja
-*.a
-*.la
 *.pak
 *.info
-*.d
 *.v
 *.p
 *.pyc
 *.cache
 *.TOC
-*.lai
-*.so
-*.dll
-*.dylib
 
 # Qt-es
 
@@ -143,7 +133,6 @@ moc_*.cpp
 moc_*.h
 qrc_*.cpp
 Makefile*
-bin
 temp
 .reggen
 
@@ -152,9 +141,7 @@ temp
 
 # QtCreator
 
-*.autosave
 
-*.directory
 
 # Config
 # NOTE: provide config.*.example
@@ -170,7 +157,6 @@ CMakeLists.txt.user*
 
 *node_modules*
 
-CMakeFiles/
 CMakeCache.txt*
 cmake_install.cmake*
 /out*
@@ -218,3 +204,4 @@ src/chromium/third_party/boringssl_TODO/
 
 
 cling-build/
+/typescript
