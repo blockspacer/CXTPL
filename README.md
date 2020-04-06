@@ -421,7 +421,7 @@ CONAN_REVISIONS_ENABLED=1 \
         -o enable_tests=False \
         ..
 # configure
-cmake -E chdir build cmake -E time cmake -DBUILD_EXAMPLES=FALSE -DENABLE_CLING=FALSE -DINSTALL_CLING=FALSE -DCMAKE_BUILD_TYPE=Debug ..
+cmake -E chdir build cmake -E time cmake -DCONAN_AUTO_INSTALL=OFF -DBUILD_EXAMPLES=FALSE -DENABLE_CLING=FALSE -DINSTALL_CLING=FALSE -DCMAKE_BUILD_TYPE=Debug ..
 # build
 cmake -E chdir build cmake -E time cmake --build . -- -j6
 ```
@@ -449,7 +449,7 @@ cmake -E time ./build/bin/CXTPL_tool --threads 6 --input_files build/file1.cxtpl
 ```bash
 # (optional) check examples. Requires -DBUILD_EXAMPLES=TRUE
 # configure
-cmake -E chdir build cmake -E time cmake -DBUILD_EXAMPLES=TRUE -DENABLE_CLING=FALSE -DINSTALL_CLING=FALSE -DCMAKE_BUILD_TYPE=Debug ..
+cmake -E chdir build cmake -E time cmake -DCONAN_AUTO_INSTALL=OFF -DBUILD_EXAMPLES=TRUE -DENABLE_CLING=FALSE -DINSTALL_CLING=FALSE -DCMAKE_BUILD_TYPE=Debug ..
 # build
 cmake -E chdir build cmake -E time cmake --build . -- -j6
 # examples
