@@ -771,7 +771,7 @@ RUN set -ex \
   && \
   cd $WDIR/cxtpl \
   && \
-  cmake -E time conan config install conan/remotes/ \
+  cmake -E time conan config install conan/remotes_disabled_ssl/ \
   && \
   cmake -DEXTRA_CONAN_OPTS="--profile;clang;-s;build_type=Debug;--build;missing" -P tools/buildConanThirdparty.cmake \
   && \
@@ -785,7 +785,7 @@ RUN set -ex \
   # configure \
   cmake -E chdir build conan install --build=missing --profile clang .. \
   && \
-  cmake -E chdir build cmake -E time cmake -DBUILD_EXAMPLES=FALSE -DENABLE_CLING=$ENABLE_CLING -DCMAKE_BUILD_TYPE=Debug .. \
+  cmake -E chdir build cmake -E time cmake -DCONAN_AUTO_INSTALL=OFF -DBUILD_EXAMPLES=FALSE -DENABLE_CLING=$ENABLE_CLING -DCMAKE_BUILD_TYPE=Debug .. \
   && \
   # build \
   cmake -E chdir build cmake -E time cmake --build . -- -j6 \
