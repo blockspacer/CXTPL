@@ -20,7 +20,12 @@ if (CONAN_AUTO_INSTALL)
       "clang"
       CACHE STRING "Conan profile to use during installation")
   include(cmake/conan-auto-install.cmake)
-  conan_auto_install(${CONAN_PROFILE})
+  if (NOT CMAKE_BUILD_TYPE MATCHES "Debug" )
+    set(conan_build_type "Release")
+  else()
+    set(conan_build_type "Debug")
+  endif()
+  conan_auto_install(${CONAN_PROFILE} "-s;build_type=${conan_build_type};--build=missing;-o;enable_tests=False;-o;openssl:shared=True")
 endif()
 
 set(ENABLE_CLING FALSE CACHE BOOL "ENABLE_CLING")
@@ -32,8 +37,21 @@ message(STATUS "INSTALL_CLING=${INSTALL_CLING}")
 # Setup conan and include everything.
 #include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 #conan_basic_setup()
-include(conanbuildinfo)
-conan_basic_setup(TARGETS)
+if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake")
+  list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR}/)
+  include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
+  include(${CMAKE_CURRENT_BINARY_DIR}/conan_paths.cmake OPTIONAL)
+  conan_basic_setup(
+    # prevent conan_basic_setup from resetting cmake variables
+    TARGETS
+    #KEEP_RPATHS
+    # see https://github.com/conan-io/conan/issues/6012
+    #NO_OUTPUT_DIRS
+  )
+else()
+  message (WARNING "${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake not found!")
+  message (FATAL_ERROR "must use conan")
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -61,10 +79,6 @@ set(COMMON_THIRDPARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/)
 set(USE_G3LOG
   TRUE CACHE BOOL
   "Use g3log logger")
-
-set(USE_FOLLY
-  TRUE CACHE BOOL
-  "Use facebook/folly library (Apache License 2.0)")
 
 set(USE_RANG
   FALSE CACHE BOOL
@@ -337,7 +351,7 @@ add_library(CXTPL_core STATIC
 
 target_link_libraries(
   CXTPL_core
-  PUBLIC ${FOLLY_LIBRARIES}
+  PUBLIC
          #dynamic_annotations
          #${CHROMIUM_BASE_LIB}
          ${HARFBUZZ_LIBRARIES}
@@ -356,7 +370,6 @@ target_link_libraries(
          ${LZ4_LIBRARY} # used by folly
          ${LIBUNWIND_LIBRARIES} # used by folly
          ${LIBLZMA_LIBRARIES} # used by folly
-         #${LIBGFLAGS_LIBRARY} # used by folly
          #${G3LOG_LIBRARIES} # used by folly
          #glog
          #gflags
@@ -398,14 +411,12 @@ target_include_directories(
   CXTPL_core
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/submodules/boost.outcome/include/outcome/quickcpplib/include/ # TODO
-    # fatal error: folly/executors/CPUThreadPoolExecutor.h: No such file or directory
     #${CMAKE_CURRENT_SOURCE_DIR}/submodules/folly # TODO
     ${LIBIBERTY_INCLUDE_DIR} # used by folly
     #${G3LOG_INCLUDE_DIR} # used by folly
     ${LIBEVENT_INCLUDE_DIR} # used by folly
     ${LZ4_INCLUDE_DIR} # used by folly
     #${LIBGFLAGS_INCLUDE_DIR} # used by folly
-    ${FOLLY_INCLUDE_DIR}
     #${CHROMIUM_DIR} # to ./base/
     )
 

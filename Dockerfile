@@ -301,11 +301,11 @@ RUN set -ex \
     fi \
   && \
   $APT install -y \
-                    libboost-dev \
+                    #libboost-dev \
                     libevent-dev \
                     libdouble-conversion-dev \
                     libgoogle-glog-dev \
-                    libiberty-dev \
+                    #libiberty-dev \
                     liblz4-dev \
                     liblzma-dev \
                     libsnappy-dev \
@@ -360,7 +360,7 @@ RUN set -ex \
   # For convenience, alias (but don't sym-link) python & pip to python3 & pip3 as recommended in: \
   # http://askubuntu.com/questions/351318/changing-symlink-python-to-python3-causes-problems \
   && \
-  if [ ! -z "$GIT_WITH_OPENSSL" ]; then \
+  if [ "$GIT_WITH_OPENSSL" = "True" ]; then \
     echo 'building git from source, see ARG GIT_WITH_OPENSSL' \
     && \
     # Ubuntu's default git package is built with broken gnutls. Rebuild git with openssl.
@@ -690,6 +690,16 @@ RUN set -ex \
   git config --global user.name "$GIT_USERNAME" \
   && \
   ( git submodule update --init --recursive --depth 50 --progress || true ) \
+  #&& \
+  #(mkdir -p /tmp || true) \
+  #&& \
+  #cd /tmp \
+  #&& \
+  #git clone http://github.com/blockspacer/conan_boost.git \
+  #&& \
+  #cd conan_boost \
+  #&& \
+  #conan install .  \
   && \
   cd $WDIR/cxtpl \
   && \

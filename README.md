@@ -152,7 +152,10 @@ NOTE: You may want to build Docker image with `--build-arg NO_SSL="False"`. Read
 sudo -E xhost +local:docker
 
 # build Dockerfile
-sudo -E docker build --no-cache -t cpp-docker-cxtpl .
+sudo -E docker build --no-cache \
+  --build-arg GIT_WITH_OPENSSL="" \
+  --build-arg NO_SSL="False" \
+  -t cpp-docker-cxtpl .
 
 # Now let’s check if our image has been created.
 sudo -E docker images
@@ -176,7 +179,7 @@ sudo -E docker run --rm -v "$PWD":/home/u/cxtpl -w /home/u/cxtpl  -it  -e DISPLA
 # An example of how to build (with Makefile generated from cmake) inside the container
 # Mounts $PWD to /home/u/cxtpl and runs command
 mkdir build
-sudo -E docker run --rm -v "$PWD":/home/u/cxtpl -w /home/u/cxtpl/build cpp-docker-cxtpl cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE ..
+sudo -E docker run --rm -v "$PWD":/home/u/cxtpl -w /home/u/cxtpl/build cpp-docker-cxtpl cmake -DCONAN_AUTO_INSTALL=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE ..
 
 # Run resulting app in host OS:
 # ./build/<app>
