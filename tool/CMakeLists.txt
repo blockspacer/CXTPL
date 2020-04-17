@@ -25,6 +25,8 @@ target_link_libraries(CXTPL_tool PUBLIC
 target_link_libraries( CXTPL_tool PRIVATE
   ${base_LIB}
   ${build_util_LIB}
+  CONAN_PKG::corrade
+  Corrade::PluginManager
 )
 
 target_include_directories(CXTPL_tool PUBLIC

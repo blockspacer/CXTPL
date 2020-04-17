@@ -373,6 +373,8 @@ target_link_libraries(
          #${G3LOG_LIBRARIES} # used by folly
          #glog
          #gflags
+         CONAN_PKG::corrade
+         Corrade::PluginManager
          CONAN_PKG::clang_folly_conan
          CONAN_PKG::boost
          CONAN_PKG::double-conversion
